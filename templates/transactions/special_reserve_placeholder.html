@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Special Reserve Issue - SmartLibrary{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-6">
+    <div class="bg-surface rounded-2xl border border-gray-200 p-8 shadow-soft text-center space-y-6">
+        <span class="material-symbols-outlined text-6xl text-primary">local_library</span>
+        <h1 class="text-3xl font-bold text-accent tracking-tight">Special Reserve Issue (Coming Soon)</h1>
+        <p class="text-lg text-secondary max-w-2xl mx-auto">
+            The Special Reserve module is currently under development. Soon you'll be able to manage restricted materials, short-term hourly loans, and faculty reserves directly from this interface.
+        </p>
+        <div class="pt-6">
+            <a href="{% url 'transactions:issue' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold hover:bg-accent-container transition-colors shadow-soft">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Return to Standard Issue
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

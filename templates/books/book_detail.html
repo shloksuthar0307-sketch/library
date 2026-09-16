@@ -1,0 +1,674 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Detail - SmartLibrary{% endblock %}
+
+{% block content %}
+
+<!-- Section 1: Breadcrumbs & Header Actions -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-surface p-5 rounded-xl border border-gray-200 shadow-soft">
+<div class="flex flex-col gap-2">
+<!-- Breadcrumb navigation -->
+<nav class="flex items-center gap-2 text-sm font-medium text-secondary">
+<a class="hover:text-accent transition-colors" href="#">Library Management</a>
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-accent transition-colors" href="#">Books & Catalog</a>
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+<span class="text-accent font-semibold">Designing Data-Intensive Applications</span>
+</nav>
+<div class="flex flex-wrap items-center gap-3 pt-1">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-emerald-50 text-emerald-900 border border-emerald-200">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Available for Circulation
+            </span>
+<span class="text-sm  text-secondary">
+<strong class="font-semibold text-accent">8 of 10 Copies</strong> Available (2 on Active Loan)
+            </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-accent font-code">
+<span class="material-symbols-outlined text-xs" data-icon="tag">tag</span>
+              SYS-CAT-9082
+            </span>
+</div>
+</div>
+<!-- Action Buttons Cluster -->
+<div class="flex flex-wrap items-center gap-2.5">
+{% if request.user.role != 'MEMBER' %}
+<button class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface border border-gray-200 text-accent hover:bg-gray-50 text-sm font-medium transition-colors shadow-soft active:scale-98">
+<span class="material-symbols-outlined text-base text-secondary" data-icon="edit_note">edit_note</span>
+<span>Edit Metadata</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface border border-gray-200 text-accent hover:bg-gray-50 text-sm font-medium transition-colors shadow-soft active:scale-98">
+<span class="material-symbols-outlined text-base text-secondary" data-icon="print">print</span>
+<span>Print Barcode / Spine Label</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface border border-gray-200 text-accent hover:bg-gray-50 text-sm font-medium transition-colors shadow-soft active:scale-98">
+<span class="material-symbols-outlined text-base text-secondary" data-icon="file_download">file_download</span>
+<span>Export MARC-21</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent hover:bg-accent-container text-white text-sm font-semibold shadow-soft transition-all active:scale-98">
+<span class="material-symbols-outlined text-base" data-icon="assignment_turned_in">assignment_turned_in</span>
+<span>Issue Book</span>
+</button>
+{% endif %}
+
+<button class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-accent hover:bg-gray-100 text-sm font-semibold transition-colors shadow-soft active:scale-98">
+<span class="material-symbols-outlined text-base text-accent" data-icon="bookmark">bookmark</span>
+<span>Reserve / Place Hold</span>
+</button>
+
+{% if has_digital %}
+    <form method="POST" action="{% url 'books:borrow_digital' book.pk %}" class="inline">
+        {% csrf_token %}
+        <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold shadow-soft transition-all active:scale-98">
+        <span class="material-symbols-outlined text-base" data-icon="menu_book">menu_book</span>
+        <span>Borrow Digital Copy</span>
+        </button>
+    </form>
+{% endif %}
+</div>
+</div>
+<!-- Section 2: Hero Bibliographic Overview (Two-column layout) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column (4 cols) Cover & Physical Location & Stacks -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<div class="bg-surface p-6 rounded-xl border border-gray-200 shadow-soft flex flex-col items-center">
+<!-- Book Cover Presentation -->
+<div class="relative w-56 aspect-[3/4] rounded-lg overflow-hidden shadow-lg border border-gray-300/30 bg-gray-100 group transition-all duration-300 hover:shadow-xl">
+<img class="w-full h-full object-cover" data-alt="A clean, prestigious physical computer science book cover titled Designing Data-Intensive Applications featuring an intricate hand-drawn animal engraving in classic technical publisher style, set against soft studio rim lighting and crisp white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvdZ8_4yimjVLlr2meS4x0dLuRVw96n_6UtDect8bIbyRaYvbDYcaP1Eink6DEoXX1YFI5V0IM4I4nsfahKUNvuwNROY5Wmrhuy8ZCbd00sr7BR5JKxSs6ACLh1vOORli0Pybg4sOzwmLboIrJr9lbCqIP1qjpe9gqABsDNel8BVx-y878nUO611yfhzDEEb9Siazz24om7t1qgY4UoFM4Xwcw9AfCSyF9uOiRVCtswjoJgX4zf_AhxA"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-inverse-surface/85 backdrop-blur-sm text-white text-[10px] font-code tracking-wider uppercase">
+                Hardcover • Copy #01
+              </div>
+<div class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-surface/90 backdrop-blur-sm text-accent text-[11px] font-semibold flex items-center gap-1 shadow-soft">
+<span class="material-symbols-outlined text-xs" data-icon="nfc">nfc</span>
+                RFID Verified
+              </div>
+</div>
+<!-- Quick Metadata Badges Grid Under Cover -->
+<div class="w-full mt-6 space-y-3 pt-5 border-t border-gray-200/60">
+<div class="flex justify-between items-center text-sm ">
+<span class="text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="pin">pin</span>
+                  Call Number:
+                </span>
+<span class="font-code text-accent bg-background px-2 py-0.5 rounded border border-gray-200">QA76.9.D3 K55</span>
+</div>
+<div class="flex justify-between items-center text-sm ">
+<span class="text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="category">category</span>
+                  Dewey Decimal:
+                </span>
+<span class="font-code text-accent bg-background px-2 py-0.5 rounded border border-gray-200">005.74 (Data Systems)</span>
+</div>
+<div class="flex justify-between items-center text-sm ">
+<span class="text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="qr_code_2">qr_code_2</span>
+                  ISBN-13:
+                </span>
+<span class="font-code text-accent">978-1449373320</span>
+</div>
+<div class="flex justify-between items-center text-sm ">
+<span class="text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="barcode">barcode</span>
+                  RFID Tag UID:
+                </span>
+<span class="font-code text-accent bg-accent-fixed/20 px-1.5 py-0.5 rounded font-semibold">#8820-9182-9901</span>
+</div>
+</div>
+<!-- Shelf Locator Card -->
+<div class="w-full mt-5 p-4 rounded-xl bg-background border border-gray-200/80 flex flex-col gap-3">
+<div class="flex items-start gap-3">
+<div class="p-2 rounded-lg bg-gray-100 text-accent">
+<span class="material-symbols-outlined text-xl" data-icon="explore">explore</span>
+</div>
+<div>
+<h4 class="text-lg font-semibold text-accent text-sm">Shelf Location</h4>
+<p class="text-sm  text-secondary">Central Campus • Stack B4 • Shelf 12</p>
+<p class="text-xs font-medium text-accent font-semibold mt-0.5">(Bay 02 - East Face, Tier 3)</p>
+</div>
+</div>
+<button class="w-full py-2 px-3 rounded-lg bg-surface hover:bg-gray-50 text-accent font-semibold text-sm border border-gray-200 flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-base" data-icon="map">map</span>
+<span>View on 3D Floor Map</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column (8 cols) Bibliographic Meta, KPIs, & Actions -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<div class="bg-surface p-6 rounded-xl border border-gray-200 shadow-soft flex flex-col justify-between">
+<div>
+<!-- Category badge and ranking -->
+<div class="flex flex-wrap items-center gap-2 mb-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-100 text-accent text-xs font-medium font-semibold">
+<span class="material-symbols-outlined text-sm" data-icon="military_tech">military_tech</span>
+                  Top #1 Most Borrowed in Computer Science & AI
+                </span>
+<span class="text-xs font-medium text-secondary">• Faculty Recommended 2024</span>
+</div>
+<!-- Main Title & Subtitle -->
+<h1 class="text-3xl font-bold tracking-tight text-accent tracking-tight">
+                Designing Data-Intensive Applications
+              </h1>
+<p class="text-body-lg font-body-lg text-secondary mt-1">
+                The Big Ideas Behind Reliable, Scalable, and Maintainable Systems
+              </p>
+<!-- Author Chip & Publication Meta Details -->
+<div class="flex flex-wrap items-center gap-4 mt-4 py-3 border-y border-gray-200/60">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-accent font-semibold text-sm">
+                    MK
+                  </div>
+<div>
+<span class="text-xs font-medium text-secondary block">Primary Author</span>
+<span class="text-lg font-semibold text-accent hover:underline cursor-pointer">Martin Kleppmann</span>
+</div>
+</div>
+<div class="h-6 w-px bg-outline-variant"></div>
+<div class="text-sm  text-secondary">
+<strong class="text-accent">O'Reilly Media</strong> (1st Edition)
+                </div>
+<div class="h-6 w-px bg-outline-variant"></div>
+<div class="text-sm  text-secondary">
+                  Published <span class="text-accent">March 2017</span>
+</div>
+<div class="h-6 w-px bg-outline-variant"></div>
+<div class="text-sm  text-secondary">
+                  616 pages • English
+                </div>
+</div>
+<!-- Rating & Circulation Telemetry -->
+<div class="flex flex-wrap items-center gap-6 mt-4">
+<div class="flex items-center gap-1.5">
+<div class="flex text-amber-500">
+<span class="material-symbols-outlined text-lg" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="font-semibold text-accent text-sm">4.9 / 5.0</span>
+<span class="text-xs font-medium text-secondary">(342 academic reviews)</span>
+</div>
+<div class="flex items-center gap-1.5 text-sm  text-secondary">
+<span class="material-symbols-outlined text-base text-accent" data-icon="cached">cached</span>
+<span><strong>824</strong> Lifetime Institutional Checkouts</span>
+</div>
+</div>
+<!-- Academic Faculty Tags -->
+<div class="flex flex-wrap items-center gap-2 mt-4">
+<span class="text-xs font-medium text-secondary uppercase font-semibold mr-1">Classifications:</span>
+<span class="px-2.5 py-1 rounded-md bg-gray-50 text-accent text-xs font-medium font-medium">Computer Science</span>
+<span class="px-2.5 py-1 rounded-md bg-gray-50 text-accent text-xs font-medium font-medium">Distributed Systems</span>
+<span class="px-2.5 py-1 rounded-md bg-gray-50 text-accent text-xs font-medium font-medium">Cloud Architecture</span>
+<span class="px-2.5 py-1 rounded-md bg-gray-50 text-accent text-xs font-medium font-medium">Databases</span>
+<span class="px-2.5 py-1 rounded-md bg-gray-50 text-accent text-xs font-medium font-medium">Stream Processing</span>
+</div>
+</div>
+<!-- Holdings Summary KPI Cards (4 Micro-cards) -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-gray-200/60">
+<!-- KPI: Total Copies -->
+<div class="p-3.5 rounded-lg bg-background border border-gray-200 flex flex-col justify-between">
+<span class="text-xs font-medium text-secondary">Total Inventory</span>
+<div class="flex items-baseline justify-between mt-1">
+<span class="text-headline-md font-headline-md text-accent">10</span>
+<span class="text-xs font-medium text-secondary">Hardcover</span>
+</div>
+</div>
+<!-- KPI: Available Copies -->
+<div class="p-3.5 rounded-lg bg-emerald-50/70 border border-emerald-200 flex flex-col justify-between">
+<span class="text-xs font-medium text-emerald-800 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                  Available On Shelf
+                </span>
+<div class="flex items-baseline justify-between mt-1">
+<span class="text-headline-md font-headline-md text-emerald-900">8</span>
+<span class="text-xs font-medium text-emerald-700">80% Ready</span>
+</div>
+</div>
+<!-- KPI: On Active Loan -->
+<div class="p-3.5 rounded-lg bg-amber-50/70 border border-amber-200 flex flex-col justify-between">
+<span class="text-xs font-medium text-amber-800 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                  Active Patron Loans
+                </span>
+<div class="flex items-baseline justify-between mt-1">
+<span class="text-headline-md font-headline-md text-amber-900">2</span>
+<span class="text-xs font-medium text-amber-700">Due in 5d</span>
+</div>
+</div>
+<!-- KPI: Lost or Damaged -->
+<div class="p-3.5 rounded-lg bg-background border border-gray-200 flex flex-col justify-between">
+<span class="text-xs font-medium text-secondary">Lost / Damaged</span>
+<div class="flex items-baseline justify-between mt-1">
+<span class="text-headline-md font-headline-md text-accent">0</span>
+<span class="text-xs font-medium text-accent">Zero Loss</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons Row Under Right Hero -->
+<div class="flex flex-wrap items-center gap-3 mt-6 pt-4 border-t border-gray-200/60">
+<button class="flex-1 min-w-[170px] py-2.5 px-4 rounded-lg bg-accent hover:bg-accent-container text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-soft transition-all active:scale-98">
+<span class="material-symbols-outlined text-lg" data-icon="person_add">person_add</span>
+<span>+ Quick Issue to Patron</span>
+</button>
+<button class="flex-1 min-w-[160px] py-2.5 px-4 rounded-lg bg-gray-50 hover:bg-gray-100 text-accent font-semibold text-sm border border-gray-200 flex items-center justify-center gap-2 transition-colors active:scale-98">
+<span class="material-symbols-outlined text-lg text-accent" data-icon="bookmark_add">bookmark_add</span>
+<span>Reserve for Member</span>
+</button>
+<button class="py-2.5 px-3.5 rounded-lg bg-surface hover:bg-gray-50 text-accent font-semibold text-sm border border-gray-200 flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-lg text-secondary" data-icon="school">school</span>
+<span>Add to Course Reserve</span>
+</button>
+<button class="p-2.5 rounded-lg bg-surface hover:bg-error-container text-secondary hover:text-red-500 border border-gray-200 transition-colors" title="Report Missing or Damaged">
+<span class="material-symbols-outlined text-lg" data-icon="flag">flag</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Deep Detail Tabbed Content Area -->
+<div class="bg-surface rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+<!-- Segmented Tab Navigation -->
+<div class="border-b border-gray-200 px-6 bg-background flex items-center space-x-2 overflow-x-auto">
+<button class="px-4 py-3.5 text-sm font-semibold border-b-2 border-primary text-accent flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-base" data-icon="description">description</span>
+<span>Overview & Abstract</span>
+</button>
+<button class="px-4 py-3.5 text-sm font-semibold text-secondary hover:text-accent border-b-2 border-transparent hover:border-gray-300 flex items-center gap-2 whitespace-nowrap transition-colors">
+<span class="material-symbols-outlined text-base" data-icon="inventory_2">inventory_2</span>
+<span>Physical Copy Inventory & RFID Status</span>
+<span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-accent-fixed text-white-fixed">10</span>
+</button>
+<button class="px-4 py-3.5 text-sm font-semibold text-secondary hover:text-accent border-b-2 border-transparent hover:border-gray-300 flex items-center gap-2 whitespace-nowrap transition-colors">
+<span class="material-symbols-outlined text-base" data-icon="history">history</span>
+<span>Borrowing History & Analytics</span>
+</button>
+<button class="px-4 py-3.5 text-sm font-semibold text-secondary hover:text-accent border-b-2 border-transparent hover:border-gray-300 flex items-center gap-2 whitespace-nowrap transition-colors">
+<span class="material-symbols-outlined text-base" data-icon="auto_awesome">auto_awesome</span>
+<span>Related & Recommended Titles</span>
+</button>
+<button class="px-4 py-3.5 text-sm font-semibold text-secondary hover:text-accent border-b-2 border-transparent hover:border-gray-300 flex items-center gap-2 whitespace-nowrap transition-colors">
+<span class="material-symbols-outlined text-base" data-icon="rate_review">rate_review</span>
+<span>Patron Reviews & Course Reserves</span>
+</button>
+</div>
+<!-- Tab Body Content -->
+<div class="p-6 space-y-8">
+<!-- Abstract & Executive Summary Block -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-semibold text-accent flex items-center gap-2">
+<span class="material-symbols-outlined text-accent text-xl" data-icon="menu_book">menu_book</span>
+                Book Description & Executive Abstract
+              </h3>
+<span class="text-xs font-medium text-secondary">LC Control #: 2017-932152</span>
+</div>
+<p class="text-base  text-accent-variant leading-relaxed">
+              Data is at the center of many challenges in system design today. Difficult issues need to be figured out, such as scalability, consistency, reliability, efficiency, and maintainability. In addition, an overwhelming variety of tools exist, including relational databases, NoSQL datastores, stream or batch processors, and message brokers. What are the right choices for your application? How do you make sense of all these buzzwords?
+            </p>
+<p class="text-base  text-accent-variant leading-relaxed">
+              In this practical and comprehensive guide, author Martin Kleppmann helps you navigate this diverse landscape by examining the pros and cons of various technologies for processing and storing data. Software keeps changing, but the fundamental principles remain the same. With this book, software engineers and architects will learn how to apply those ideas in practice, and how to make full use of modern data infrastructure in production.
+            </p>
+<!-- Key Thematic Topics Covered -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+<div class="p-3 rounded-lg bg-background border border-gray-200">
+<span class="text-lg font-semibold text-sm text-accent flex items-center gap-1.5 mb-1">
+<span class="material-symbols-outlined text-base" data-icon="storage">storage</span>
+                  Part I: Foundations of Data
+                </span>
+<p class="text-sm  text-secondary">Reliability, Scalability, Data Models, Query Languages, Storage Engines, Encoding & Evolution.</p>
+</div>
+<div class="p-3 rounded-lg bg-background border border-gray-200">
+<span class="text-lg font-semibold text-sm text-accent flex items-center gap-1.5 mb-1">
+<span class="material-symbols-outlined text-base" data-icon="hub">hub</span>
+                  Part II: Distributed Data
+                </span>
+<p class="text-sm  text-secondary">Replication topologies, Partitioning, ACID vs BASE Transactions, Consistency, and Consensus.</p>
+</div>
+<div class="p-3 rounded-lg bg-background border border-gray-200">
+<span class="text-lg font-semibold text-sm text-accent flex items-center gap-1.5 mb-1">
+<span class="material-symbols-outlined text-base" data-icon="stream">stream</span>
+                  Part III: Derived Data
+                </span>
+<p class="text-sm  text-secondary">Batch processing pipelines (MapReduce/Spark), Stream processing, Event Sourcing, Unbundling.</p>
+</div>
+</div>
+</div>
+<!-- Copy Inventory Management Table -->
+<div class="space-y-4 pt-4 border-t border-gray-200/60">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<h3 class="text-lg font-semibold text-accent flex items-center gap-2">
+<span class="material-symbols-outlined text-accent text-xl" data-icon="format_list_numbered">format_list_numbered</span>
+                  Physical Copy Inventory & Real-time RFID Tracking
+                </h3>
+<p class="text-sm  text-secondary">10 Registered physical library assets across campuses</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative">
+<input class="pl-8 pr-3 py-1.5 text-sm  rounded-lg border border-gray-200 bg-surface focus:outline-none focus:border-primary" placeholder="Filter copy by ID..." type="text"/>
+<span class="material-symbols-outlined text-secondary text-sm absolute left-2.5 top-2" data-icon="filter_list">filter_list</span>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-gray-50 text-accent font-semibold text-sm border border-gray-200 flex items-center gap-1">
+<span class="material-symbols-outlined text-base" data-icon="add">add</span>
+<span>Register Copy</span>
+</button>
+</div>
+</div>
+<!-- Table Container -->
+<div class="overflow-x-auto border border-gray-200 rounded-lg">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-background border-b border-gray-200 text-xs font-medium text-secondary uppercase tracking-wider">
+<th class="py-3 px-4">Barcode / Tag ID</th>
+<th class="py-3 px-4">Campus & Location</th>
+<th class="py-3 px-4">Status & Circulation</th>
+<th class="py-3 px-4">Condition</th>
+<th class="py-3 px-4">Last Inspected</th>
+<th class="py-3 px-4 text-right">Quick Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant text-sm  bg-surface">
+<!-- Copy 1: Available -->
+<tr class="hover:bg-background/50 transition-colors">
+<td class="py-3 px-4 font-code text-accent flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-secondary text-base" data-icon="qr_code">qr_code</span>
+                      SL-DDIA-C001
+                    </td>
+<td class="py-3 px-4 text-accent">Central Master Stacks (Stack B4-12)</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Available
+                      </span>
+</td>
+<td class="py-3 px-4 text-accent font-medium">Pristine (New)</td>
+<td class="py-3 px-4 text-secondary">Oct 12, 2024</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 rounded bg-accent text-white text-xs font-semibold hover:bg-accent-container transition-all">Issue</button>
+</td>
+</tr>
+<!-- Copy 2: Available -->
+<tr class="hover:bg-background/50 transition-colors">
+<td class="py-3 px-4 font-code text-accent flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-secondary text-base" data-icon="qr_code">qr_code</span>
+                      SL-DDIA-C002
+                    </td>
+<td class="py-3 px-4 text-accent">Central Master Stacks (Stack B4-12)</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Available
+                      </span>
+</td>
+<td class="py-3 px-4 text-accent">Good</td>
+<td class="py-3 px-4 text-secondary">Sep 28, 2024</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 rounded bg-accent text-white text-xs font-semibold hover:bg-accent-container transition-all">Issue</button>
+</td>
+</tr>
+<!-- Copy 3: On Loan -->
+<tr class="hover:bg-background/50 transition-colors bg-amber-50/20">
+<td class="py-3 px-4 font-code text-accent flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-secondary text-base" data-icon="qr_code">qr_code</span>
+                      SL-DDIA-C003
+                    </td>
+<td class="py-3 px-4 text-accent">Science & Tech Library</td>
+<td class="py-3 px-4">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900 border border-amber-300 w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                          On Loan (Due Oct 28, 2024)
+                        </span>
+<span class="text-xs font-medium text-secondary mt-0.5">Patron: Marcus Chen (ID 2024-CS-08)</span>
+</div>
+</td>
+<td class="py-3 px-4 text-accent">Good</td>
+<td class="py-3 px-4 text-secondary">Oct 14, 2024</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 rounded bg-gray-50 border border-gray-200 text-accent text-xs font-semibold hover:bg-gray-100 transition-all">Check-In</button>
+</td>
+</tr>
+<!-- Copy 4: On Loan -->
+<tr class="hover:bg-background/50 transition-colors bg-amber-50/20">
+<td class="py-3 px-4 font-code text-accent flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-secondary text-base" data-icon="qr_code">qr_code</span>
+                      SL-DDIA-C004
+                    </td>
+<td class="py-3 px-4 text-accent">Central Master Stacks</td>
+<td class="py-3 px-4">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900 border border-amber-300 w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                          On Loan (Due Nov 04, 2024)
+                        </span>
+<span class="text-xs font-medium text-secondary mt-0.5">Patron: Dr. Elena Rostova (Faculty CS)</span>
+</div>
+</td>
+<td class="py-3 px-4 text-accent font-medium">Pristine</td>
+<td class="py-3 px-4 text-secondary">Oct 20, 2024</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 rounded bg-gray-50 border border-gray-200 text-accent text-xs font-semibold hover:bg-gray-100 transition-all">Check-In</button>
+</td>
+</tr>
+<!-- Copy 5: Reference Only -->
+<tr class="hover:bg-background/50 transition-colors">
+<td class="py-3 px-4 font-code text-accent flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-secondary text-base" data-icon="qr_code">qr_code</span>
+                      SL-DDIA-C005
+                    </td>
+<td class="py-3 px-4 text-accent">Graduate Reading Room (Non-circulating)</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-800 border border-purple-200">
+<span class="material-symbols-outlined text-xs" data-icon="lock">lock</span>
+                        Reference Only
+                      </span>
+</td>
+<td class="py-3 px-4 text-accent font-medium">Pristine</td>
+<td class="py-3 px-4 text-secondary">Oct 01, 2024</td>
+<td class="py-3 px-4 text-right">
+<span class="text-xs font-medium text-secondary italic">In-Library Only</span>
+</td>
+</tr>
+<!-- Copy 6: In Transit -->
+<tr class="hover:bg-background/50 transition-colors">
+<td class="py-3 px-4 font-code text-accent flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-secondary text-base" data-icon="qr_code">qr_code</span>
+                      SL-DDIA-C006
+                    </td>
+<td class="py-3 px-4 text-accent">Transit: Science Library → Central Stacks</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200">
+<span class="material-symbols-outlined text-xs" data-icon="local_shipping">local_shipping</span>
+                        In Transit
+                      </span>
+</td>
+<td class="py-3 px-4 text-accent">Good</td>
+<td class="py-3 px-4 text-secondary">Today, 09:15 AM</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 rounded bg-gray-50 border border-gray-200 text-accent text-xs font-semibold hover:bg-gray-100 transition-all">Receive</button>
+</td>
+</tr>
+<!-- Copies 7 to 10: Available Compact Rows -->
+<tr class="hover:bg-background/50 transition-colors">
+<td class="py-3 px-4 font-code text-accent flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-secondary text-base" data-icon="qr_code">qr_code</span>
+                      SL-DDIA-C007
+                    </td>
+<td class="py-3 px-4 text-accent">Central Master Stacks (Stack B4-12)</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Available
+                      </span>
+</td>
+<td class="py-3 px-4 text-accent">Good</td>
+<td class="py-3 px-4 text-secondary">Sep 19, 2024</td>
+<td class="py-3 px-4 text-right">
+<button class="px-2.5 py-1 rounded bg-accent text-white text-xs font-semibold hover:bg-accent-container transition-all">Issue</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between text-sm  text-secondary pt-1">
+<span>Showing 7 of 10 physical records (3 additional reserve copies cached)</span>
+<button class="text-accent font-semibold hover:underline flex items-center gap-1">
+<span>View all 10 copies</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Section: Circulation History Highlights & Recent Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4 border-t border-gray-200/60">
+<!-- Left 7 cols: Circulation Activity Stream -->
+<div class="lg:col-span-7 space-y-3">
+<h3 class="text-lg font-semibold text-accent flex items-center gap-2">
+<span class="material-symbols-outlined text-accent text-xl" data-icon="swap_horiz">swap_horiz</span>
+                Recent Circulation Transactions
+              </h3>
+<div class="space-y-2.5">
+<!-- Transaction 1 -->
+<div class="p-3 rounded-lg border border-gray-200 bg-background flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-accent-fixed flex items-center justify-center text-white-fixed font-semibold text-sm">
+                      MC
+                    </div>
+<div>
+<div class="text-lg font-semibold text-sm text-accent">Marcus Chen <span class="font-normal text-secondary">(Grad Student #2024-CS-08)</span></div>
+<div class="text-xs font-medium text-secondary">Copy #003 • Issued Oct 14, 2024 • Due Oct 28, 2024</div>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded text-xs font-medium bg-amber-50 text-amber-900 border border-amber-200">Active Loan</span>
+</div>
+<!-- Transaction 2 -->
+<div class="p-3 rounded-lg border border-gray-200 bg-background flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed font-semibold text-sm">
+                      ER
+                    </div>
+<div>
+<div class="text-lg font-semibold text-sm text-accent">Dr. Elena Rostova <span class="font-normal text-secondary">(Faculty Fellow)</span></div>
+<div class="text-xs font-medium text-secondary">Copy #004 • Issued Oct 20, 2024 • Due Nov 04, 2024</div>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded text-xs font-medium bg-amber-50 text-amber-900 border border-amber-200">Active Loan</span>
+</div>
+<!-- Transaction 3 -->
+<div class="p-3 rounded-lg border border-gray-200 bg-background flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-surface-variant flex items-center justify-center text-accent font-semibold text-sm">
+                      SK
+                    </div>
+<div>
+<div class="text-lg font-semibold text-sm text-accent">Siddharth Kumar <span class="font-normal text-secondary">(Undergrad #2022-EE-19)</span></div>
+<div class="text-xs font-medium text-secondary">Copy #001 • Returned Oct 12, 2024 • Perfect Condition</div>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded text-xs font-medium bg-emerald-50 text-emerald-900 border border-emerald-200">Returned</span>
+</div>
+</div>
+</div>
+<!-- Right 5 cols: Borrowing Trend Telemetry Mini-Card -->
+<div class="lg:col-span-5 space-y-3">
+<h3 class="text-lg font-semibold text-accent flex items-center gap-2">
+<span class="material-symbols-outlined text-accent text-xl" data-icon="insights">insights</span>
+                Circulation Velocity
+              </h3>
+<div class="p-4 rounded-xl border border-gray-200 bg-background space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-sm  text-secondary">Average Turnaround Time:</span>
+<span class="font-semibold text-accent">11.4 Days</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-2">
+<div class="bg-accent h-2 rounded-full" style="width: 82%"></div>
+</div>
+<div class="flex justify-between items-center text-sm ">
+<span class="text-secondary">Demand vs Supply Index:</span>
+<span class="text-accent font-semibold font-semibold">High Demand (Top 2%)</span>
+</div>
+<div class="pt-2 border-t border-gray-200/60 flex items-center gap-2 text-xs font-medium text-secondary">
+<span class="material-symbols-outlined text-accent text-sm" data-icon="auto_graph">auto_graph</span>
+                  Estimated 28 days continuous hold queue if copies drop below 4.
+                </div>
+</div>
+</div>
+</div>
+<!-- Section: Related & Recommended Titles (Academic Curated Mini-Cards) -->
+<div class="space-y-4 pt-4 border-t border-gray-200/60">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-semibold text-accent flex items-center gap-2">
+<span class="material-symbols-outlined text-accent text-xl" data-icon="library_books">library_books</span>
+                Related & Recommended Academic Titles
+              </h3>
+<a class="text-accent font-semibold text-sm hover:underline flex items-center gap-1" href="#">
+<span>View Full Curriculum Bundle</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Related Card 1: Clean Code -->
+<div class="p-4 rounded-xl border border-gray-200 bg-background hover:border-primary/50 transition-all group flex flex-col justify-between">
+<div>
+<div class="w-full aspect-[3/4] bg-gray-100 rounded-lg mb-3 overflow-hidden shadow-soft border border-gray-300/20">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Technical handbook cover for Clean Code by Robert C. Martin with sleek modern software engineering typography and academic dark navy branding against clean lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmbhtsKz_9ba8dachYG0bHN1XMdI9eORh7__zYWGRmnufk1-cfpYLpfXzD-_47_CAtCbXq3DQi08eL-SEC8jHwjK4TiY596wwFUPcNYJh4kTV4KMYB8rL0u1dg6htczDzPqDI02iQsWx6gn9qrR7HVLIy9hom15uF5-MbJavTuVqp-qw1XvvHWO4VNGvcVL2IoFWJBeF4bpl2K0S2u0zflrl2AWJQcFcKYJFc9EqpIQbO9sHgmwjxqQA"/>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">5 Available</span>
+<h4 class="text-lg font-semibold text-sm text-accent mt-2 group-hover:text-accent transition-colors">Clean Code</h4>
+<p class="text-xs font-medium text-secondary">Robert C. Martin (Prentice Hall)</p>
+</div>
+<div class="mt-3 pt-3 border-t border-gray-200/50 flex items-center justify-between text-xs font-medium">
+<span class="font-code text-secondary">QA76.76.C64</span>
+<button class="text-accent font-semibold hover:underline">Inspect</button>
+</div>
+</div>
+<!-- Related Card 2: Introduction to Algorithms -->
+<div class="p-4 rounded-xl border border-gray-200 bg-background hover:border-primary/50 transition-all group flex flex-col justify-between">
+<div>
+<div class="w-full aspect-[3/4] bg-gray-100 rounded-lg mb-3 overflow-hidden shadow-soft border border-gray-300/20">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Iconic textbook cover Introduction to Algorithms CLRS fourth edition featuring geometric algorithms art against crisp academic studio lighting with slate aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRdFb1epCR9TwhQUJGXuW9JGQLfFh6h0oCR0Lii6zhK4S9WPcibPzTbLpks2gQ7XyfjZCtpg0XmzOmPj65u3j_7iEc2DLB0-CBWK8mg7DA63MevOs_XWjSh40UQtLDPVXQCMD0mfhI5HdKRtIVDHL-SK9DNSlpySSEtzRwK-d3-ZvNd_e21ydk2FYqqZy55Fg44In2CtWOh8YjKq6VXiCUgv5FjCvpgC6hrba-MMRHK3sXaoQmr1sQFg"/>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">1 Available (High Demand)</span>
+<h4 class="text-lg font-semibold text-sm text-accent mt-2 group-hover:text-accent transition-colors">Introduction to Algorithms</h4>
+<p class="text-xs font-medium text-secondary">Cormen, Leiserson, Rivest, Stein</p>
+</div>
+<div class="mt-3 pt-3 border-t border-gray-200/50 flex items-center justify-between text-xs font-medium">
+<span class="font-code text-secondary">QA76.6 .I5858</span>
+<button class="text-accent font-semibold hover:underline">Inspect</button>
+</div>
+</div>
+<!-- Related Card 3: Database Internals -->
+<div class="p-4 rounded-xl border border-gray-200 bg-background hover:border-primary/50 transition-all group flex flex-col justify-between">
+<div>
+<div class="w-full aspect-[3/4] bg-gray-100 rounded-lg mb-3 overflow-hidden shadow-soft border border-gray-300/20">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Technical engineering book cover Database Internals by Alex Petrov with detailed distributed storage system schematics under neutral balanced daylight lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5w0U0I5Po7aU-WqHolFyl7TE3DZt5sVyPlWqXioLRqsrBZKqe6CzMyr6VrvVPn7tonlg1tEPtci597hzmQWywEaLqwvZse0FWs3PPo3_KUndQC1yWkecEnA8RzthzTPoNKce4XmslilZMowXZ9KQYVJO18nBLafb65TFfOMclqxAwm9kKrenReCaeCugCA0R5t9qkji1RB6mmLqPp6h0OOI-zlHdvQ2e-KIOjHUM3w67wSnmZKmqjKg"/>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">4 Available</span>
+<h4 class="text-lg font-semibold text-sm text-accent mt-2 group-hover:text-accent transition-colors">Database Internals</h4>
+<p class="text-xs font-medium text-secondary">Alex Petrov (O'Reilly Media)</p>
+</div>
+<div class="mt-3 pt-3 border-t border-gray-200/50 flex items-center justify-between text-xs font-medium">
+<span class="font-code text-secondary">QA76.9.D3 P48</span>
+<button class="text-accent font-semibold hover:underline">Inspect</button>
+</div>
+</div>
+<!-- Related Card 4: System Design Interview -->
+<div class="p-4 rounded-xl border border-gray-200 bg-background hover:border-primary/50 transition-all group flex flex-col justify-between">
+<div>
+<div class="w-full aspect-[3/4] bg-gray-100 rounded-lg mb-3 overflow-hidden shadow-soft border border-gray-300/20">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Clean minimal system architecture book cover System Design Interview by Alex Xu with microservice diagram motifs and deep slate blue tones in modern tech office lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM09fm43xnGvW1s9agivzhSTGlHZ0_5KCad5gtOdxBBtVRIDuFd-5vZxT8PFYR6pix8e-sn0soUMSDFf-Irav53xQQEhgk8Jww10wkWqy9fjlKU9dNwviXgR4XRbvAZ2ZIueJJzFEyDbgLhn6wzzduBCAay4E7ZdMq5eDA8utfw1jsbLjzy28eNQzxPDxA5Cj3gK4idwkON9lSRkcidEFq4uVYpL15ChjUwXGfE1pdMvTVjpbHDP-LFg"/>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">6 Available</span>
+<h4 class="text-lg font-semibold text-sm text-accent mt-2 group-hover:text-accent transition-colors">System Design Interview</h4>
+<p class="text-xs font-medium text-secondary">Alex Xu (ByteDance Series)</p>
+</div>
+<div class="mt-3 pt-3 border-t border-gray-200/50 flex items-center justify-between text-xs font-medium">
+<span class="font-code text-secondary">TK5105.5 .X88</span>
+<button class="text-accent font-semibold hover:underline">Inspect</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+{% endblock %}

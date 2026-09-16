@@ -1,0 +1,28 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Delete Book - LIBRIX{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto mt-12">
+    <div class="bg-surface border border-red-200 rounded-xl shadow-soft overflow-hidden text-center">
+        <div class="p-8">
+            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-3xl">warning</span>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-primary mb-2">Delete Book</h2>
+            <p class="text-secondary mb-6">Are you sure you want to delete <span class="font-bold text-primary">"{{ book.title }}"</span>? This action cannot be undone and will remove all associated inventory data.</p>
+            
+            <form method="POST" class="flex items-center justify-center gap-4">
+                {% csrf_token %}
+                <a href="{% url 'books:list' %}" class="px-6 py-2.5 bg-background border border-gray-200 text-secondary font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-soft">
+                    Yes, Delete Book
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

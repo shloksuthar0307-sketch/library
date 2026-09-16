@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% block title %}Reservations - LIBRIX{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-primary tracking-tight">
+            {% if request.user.role == 'MEMBER' %}My Reservations{% else %}Book Reservations{% endif %}
+        </h1>
+        <p class="text-secondary mt-1">
+            {% if request.user.role == 'MEMBER' %}Track the status of your holds and requested books.{% else %}Manage the library hold queue and reservations.{% endif %}
+        </p>
+    </div>
+    {% if request.user.role != 'MEMBER' %}
+    <button onclick="document.getElementById('reservationModal').classList.remove('hidden')"
+        class="bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-soft flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">add</span>
+        New Reservation
+    </button>
+    {% endif %}
+</div>
+
+<!-- Stats Row -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">bookmark</span>
+            <span class="text-sm font-medium text-secondary">Total</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ total_count }}</p>
+    </div>
+    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">schedule</span>
+            <span class="text-sm font-medium text-secondary">Pending</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ pending_count }}</p>
+    </div>
+    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+            <span class="text-sm font-medium text-secondary">Ready</span>
+        </div>
+        <p class="text-3xl font-bold text-accent">{{ ready_count }}</p>
+    </div>
+    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">cancel</span>
+            <span class="text-sm font-medium text-secondary">Cancelled</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ cancelled_count }}</p>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-gray-200 bg-background text-xs font-semibold text-muted uppercase tracking-wider">
+                    {% if request.user.role != 'MEMBER' %}
+                    <th class="px-4 py-3">Member</th>
+                    {% endif %}
+                    <th class="px-4 py-3">Book</th>
+                    <th class="px-4 py-3">Reserved On</th>
+                    <th class="px-4 py-3">Expires</th>
+                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for res in reservations %}
+                <tr class="hover:bg-gray-50 transition-colors group">
+                    {% if request.user.role != 'MEMBER' %}
+                    <td class="px-4 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                {{ res.member.username|first|upper }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-primary">{{ res.member.get_full_name|default:res.member.username }}</p>
+                                <p class="text-xs text-muted font-mono">{{ res.member.username|default:"—" }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    {% endif %}
+                    <td class="px-4 py-4">
+                        <p class="text-sm font-medium text-primary">{{ res.book.title }}</p>
+                        <p class="text-xs text-muted">{{ res.book.author.name|default:"—" }}</p>
+                    </td>
+                    <td class="px-4 py-4 text-sm text-secondary">{{ res.reservation_date|date:"M d, Y" }}</td>
+                    <td class="px-4 py-4 text-sm text-secondary">{{ res.expiry_date|date:"M d, Y"|default:"—" }}</td>
+                    <td class="px-4 py-4">
+                        {% if res.status == 'PENDING' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+                        {% elif res.status == 'APPROVED' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Ready</span>
+                        {% elif res.status == 'CANCELLED' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Cancelled</span>
+                        {% elif res.status == 'COMPLETED' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Completed</span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">{{ res.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-4 text-right">
+                        <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {% if request.user.role != 'MEMBER' and res.status == 'PENDING' %}
+                            <form method="POST" action="{% url 'reservations:update_status' res.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="APPROVED">
+                                <button type="submit" class="px-2.5 py-1 bg-accent text-white rounded-lg text-xs font-medium hover:bg-accent-hover transition-colors" title="Approve">
+                                    Approve
+                                </button>
+                            </form>
+                            {% endif %}
+                            
+                            {% if res.status == 'PENDING' or res.status == 'APPROVED' %}
+                            <form method="POST" action="{% url 'reservations:update_status' res.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="CANCELLED">
+                                <button type="submit" class="p-1.5 text-secondary hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Cancel Reservation">
+                                    <span class="material-symbols-outlined text-[18px]">cancel</span>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-4 py-16 text-center">
+                        <span class="material-symbols-outlined text-5xl text-muted block mb-3">bookmark</span>
+                        <p class="text-secondary font-medium">No reservations yet.</p>
+                        {% if request.user.role != 'MEMBER' %}
+                        <p class="text-muted text-sm mt-1">Click <strong class="text-accent">New Reservation</strong> to place the first hold.</p>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="px-4 py-3 border-t border-gray-200 bg-background">
+        <span class="text-sm text-secondary">Showing <span class="font-medium text-primary">{{ reservations.count }}</span> reservations</span>
+    </div>
+</div>
+
+<!-- New Reservation Modal -->
+<div id="reservationModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+    <div class="bg-surface rounded-xl border border-gray-200 shadow-xl w-full max-w-md">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-primary">Place New Reservation</h2>
+            <button onclick="document.getElementById('reservationModal').classList.add('hidden')"
+                class="p-1 rounded-lg text-secondary hover:text-primary hover:bg-gray-100 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <form method="POST" action="{% url 'reservations:create' %}" class="p-6 space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1.5">Member <span class="text-red-500">*</span></label>
+                <select name="member_id" required
+                    class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
+                    <option value="">— Select a Member —</option>
+                    {% for member in members_list %}
+                    <option value="{{ member.pk }}">{{ member.get_full_name|default:member.username }} ({{ member.username|default:"—" }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1.5">Book <span class="text-red-500">*</span></label>
+                <select name="book_id" required
+                    class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
+                    <option value="">— Select a Book —</option>
+                    {% for book in books_list %}
+                    <option value="{{ book.pk }}">{{ book.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1.5">Expiry Date</label>
+                <input type="date" name="expiry_date"
+                    class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+                <button type="button" onclick="document.getElementById('reservationModal').classList.add('hidden')"
+                    class="px-4 py-2 text-sm font-medium text-secondary hover:text-primary transition-colors">Cancel</button>
+                <button type="submit"
+                    class="px-5 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-colors shadow-soft">
+                    Reserve Book
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

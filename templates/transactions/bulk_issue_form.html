@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulk Issue - SmartLibrary{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+<!-- Header & Actions -->
+<section class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+<div>
+<nav class="flex items-center gap-2 text-sm  text-secondary mb-1">
+<a class="hover:text-accent transition-colors" href="#">Transactions</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="hover:text-accent transition-colors" href="#">Issue Book</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-accent font-medium">Bulk Circulation Desk</span>
+</nav>
+<h1 class="text-3xl font-bold tracking-tight text-accent tracking-tight">Bulk Issue Desk</h1>
+<p class="text-base  text-accent-variant">Issue multiple assets concurrently to a single patron.</p>
+</div>
+<!-- Mode Selectors & Reset Quick Action -->
+<div class="flex items-center gap-2 bg-surface p-1.5 rounded-2xl border border-gray-200 shadow-soft w-full lg:w-auto overflow-x-auto whitespace-nowrap scrollbar-hide">
+<a href="{% url 'transactions:issue' %}" class="px-3.5 py-1.5 rounded-xl text-secondary hover:bg-background font-medium text-sm flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span>Standard Issue</span>
+</a>
+<a href="{% url 'transactions:bulk_issue' %}" class="px-3.5 py-1.5 rounded-xl bg-accent text-white font-medium text-sm shadow-soft flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">layers</span>
+<span>Bulk Issue (Active)</span>
+</a>
+<a href="{% url 'transactions:special_reserve' %}" class="px-3.5 py-1.5 rounded-xl text-secondary hover:bg-background font-medium text-sm flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">local_library</span>
+<span>Special Reserve Issue</span>
+</a>
+<div class="h-5 w-px bg-gray-200 mx-1 hidden sm:block"></div>
+<button type="button" onclick="document.getElementById('issue-form').reset()" class="px-3 py-1.5 text-secondary hover:text-red-500 hover:bg-red-50 rounded-xl font-medium text-sm transition-colors flex items-center gap-1.5 sm:ml-auto">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+<span>Reset Form</span>
+</button>
+</div>
+</section>
+<!-- 3-Step Visual Progress Bar -->
+<section class="bg-surface rounded-2xl border border-gray-200 p-4 shadow-soft">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Step 1 Complete -->
+<a href="#step1" class="flex items-center gap-3 p-2 rounded-xl bg-background/50 hover:bg-gray-100 transition-colors">
+<div class="w-8 h-8 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center font-semibold text-lg shrink-0">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<div>
+<div class="text-xs font-medium text-accent">STEP 01 • VERIFIED</div>
+<div class="text-lg font-semibold text-accent">Patron Verification</div>
+</div>
+</a>
+<!-- Step 2 In Progress / Active Selection -->
+<a href="#step2" class="flex items-center gap-3 p-2 rounded-xl bg-gray-100/40 border border-primary/30 hover:bg-gray-100 transition-colors">
+<div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-semibold text-lg shrink-0">
+<span class="text-[14px]">2</span>
+</div>
+<div>
+<div class="text-xs font-medium text-accent">STEP 02 • ASSET ACQUIRED</div>
+<div class="text-lg font-semibold text-accent">Book &amp; Asset Selection</div>
+</div>
+</a>
+<!-- Step 3 Ready to finalize -->
+<a href="#step3" class="flex items-center gap-3 p-2 rounded-xl bg-background/30 hover:bg-gray-100 transition-colors">
+<div class="w-8 h-8 rounded-full bg-gray-100 text-secondary flex items-center justify-center font-semibold text-lg shrink-0">
+<span class="text-[14px]">3</span>
+</div>
+<div>
+<div class="text-xs font-medium text-secondary">STEP 03 • CONFIGURATION</div>
+<div class="text-lg font-semibold text-secondary">Loan Terms &amp; Authorization</div>
+</div>
+</a>
+</div>
+</section>
+<!-- Main Layout: Circulation Engine (Left 8-cols) & Right Rail Summary (4-cols) -->
+<form method="POST" action="{% url 'transactions:bulk_issue' %}" class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start" id="issue-form">
+{% csrf_token %}
+<!-- Left Operational Canvas (8 Columns) -->
+<div class="xl:col-span-8 space-y-6">
+<!-- STEP 1: PATRON VERIFICATION CARD -->
+<div id="step1" class="bg-surface rounded-2xl border border-gray-200 p-6 shadow-soft space-y-5 scroll-mt-24">
+<div class="flex items-center justify-between border-b border-gray-200/60 pb-3">
+<div class="flex items-center gap-2.5">
+<span class="flex items-center justify-center w-6 h-6 rounded-md bg-accent-fixed text-accent font-bold text-xs">1</span>
+<h2 class="text-lg font-semibold text-accent">Patron Identity &amp; Lending Health</h2>
+</div>
+<button type="button" class="text-sm  text-accent hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+<span>Switch Patron</span>
+</button>
+</div>
+<!-- Verified Patron Banner Card -->
+<div class="bg-surface-bright rounded-xl border border-gray-200 p-4">
+    <label class="text-sm font-medium text-accent mb-2 block">Select Patron</label>
+    <select name="member_id" required class="w-full px-3.5 py-2.5 bg-background border border-gray-200 rounded-xl text-base font-medium text-accent focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer">
+        <option value="" disabled selected>Search or select a member...</option>
+        {% for member in members %}
+            <option value="{{ member.id }}">{{ member.get_full_name|default:member.username }} ({{ member.member_profile.member_id|default:member.email }})</option>
+        {% endfor %}
+    </select>
+</div>
+<!-- Patron selected info will go here -->
+</div>
+<!-- STEP 2: BOOK / ASSET SELECTION -->
+<div id="step2" class="bg-surface rounded-2xl border border-gray-200 p-6 shadow-soft space-y-5 scroll-mt-24">
+<div class="flex items-center justify-between border-b border-gray-200/60 pb-3">
+<div class="flex items-center gap-2.5">
+<span class="flex items-center justify-center w-6 h-6 rounded-md bg-accent text-white font-bold text-xs">2</span>
+<h2 class="text-lg font-semibold text-accent">Book &amp; Catalog Asset Verification</h2>
+</div>
+</div>
+<!-- Scan Input Bar -->
+<div class="bg-surface-bright rounded-xl border border-gray-200 p-4">
+    <label class="text-sm font-medium text-accent mb-2 block">Select Books (Hold Ctrl/Cmd to select multiple)</label>
+    <select name="book_ids" multiple required class="w-full px-3.5 py-2.5 bg-background border border-gray-200 rounded-xl text-base font-medium text-accent focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer h-48">
+        {% for book in books %}
+            <option value="{{ book.id }}">{{ book.title }} by {{ book.author.name|default:book.author }}</option>
+        {% endfor %}
+    </select>
+</div>
+</div>
+<!-- STEP 3: LOAN TERMS & DUE DATE CONFIGURATION -->
+<div id="step3" class="bg-surface rounded-2xl border border-gray-200 p-6 shadow-soft space-y-5 scroll-mt-24">
+<div class="flex items-center justify-between border-b border-gray-200/60 pb-3">
+<div class="flex items-center gap-2.5">
+<span class="flex items-center justify-center w-6 h-6 rounded-md bg-secondary text-on-secondary font-bold text-xs">3</span>
+<h2 class="text-lg font-semibold text-accent">Loan Policy &amp; Notification Rules</h2>
+</div>
+<span class="text-xs font-medium text-secondary">Auto-calculated using Student Standing</span>
+</div>
+<!-- Loan Presets Segmented Buttons -->
+<div>
+<label class="text-sm font-medium text-accent mb-2 block">Loan Period Presets</label>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+<button class="p-3 rounded-xl border-2 border-primary bg-accent-fixed/20 text-left transition-all">
+<div class="text-xs font-medium text-accent font-bold">Standard 14 Days</div>
+<div class="text-sm  text-accent-variant">Default Student</div>
+</button>
+<button class="p-3 rounded-xl border border-gray-200 hover:bg-background text-left transition-all">
+<div class="text-xs font-medium text-accent font-semibold">30 Days</div>
+<div class="text-sm  text-accent-variant">Graduate / Research</div>
+</button>
+<button class="p-3 rounded-xl border border-gray-200 hover:bg-background text-left transition-all">
+<div class="text-xs font-medium text-accent font-semibold">End of Semester</div>
+<div class="text-sm  text-accent-variant">Faculty Exemption</div>
+</button>
+<button class="p-3 rounded-xl border border-gray-200 hover:bg-background text-left transition-all">
+<div class="text-xs font-medium text-accent font-semibold">Custom Date</div>
+<div class="text-sm  text-accent-variant">Special Permission</div>
+</button>
+</div>
+</div>
+<!-- Due Date Calculation Box -->
+<div class="p-4 rounded-xl bg-background border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+<div>
+<span class="text-xs font-medium text-secondary block">Issue Date</span>
+<span class="text-lg font-semibold text-accent">{% now "M d, Y" %}</span>
+<span class="text-sm  text-secondary block">{% now "H:i" %} Local Time</span>
+</div>
+<div class="border-l-0 md:border-l border-gray-200/60 md:pl-4">
+<span class="text-xs font-medium text-secondary block">Calculated Due Date</span>
+<span class="text-headline-sm font-headline-sm text-accent">Auto-calculated</span>
+<span class="text-sm  text-secondary block">Based on org policies</span>
+</div>
+<div class="border-l-0 md:border-l border-gray-200/60 md:pl-4">
+<span class="text-xs font-medium text-secondary block">Grace Period &amp; Fines</span>
+<span class="text-lg font-semibold text-accent">Standard Policy</span>
+<span class="text-sm  text-secondary block">Applies if overdue</span>
+</div>
+</div>
+<!-- Receipts & Notification Preferences -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+<label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-surface-bright cursor-pointer hover:bg-background transition-colors">
+<input checked="" class="w-4 h-4 rounded text-accent focus:ring-primary border-gray-200" type="checkbox"/>
+<div>
+<span class="text-sm font-medium text-accent block">Email Digital Circulation Receipt</span>
+<span class="text-sm  text-accent-variant">Dispatches PDF copy to patron's email</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-surface-bright cursor-pointer hover:bg-background transition-colors">
+<input checked="" class="w-4 h-4 rounded text-accent focus:ring-primary border-gray-200" type="checkbox"/>
+<div>
+<span class="text-sm font-medium text-accent block">Send SMS Reminder</span>
+<span class="text-sm  text-accent-variant">Alert sent 2 days prior to due date</span>
+</div>
+</label>
+</div>
+<!-- Circulation Notes Flag -->
+<div>
+<label class="text-sm font-medium text-accent mb-1.5 block">Circulation Desk Inspection Notes</label>
+<div class="relative">
+<input class="w-full px-3.5 py-2 bg-surface-bright border border-gray-200 rounded-xl text-base  text-accent focus:ring-2 focus:ring-primary/20 focus:border-primary" type="text" placeholder="Add optional inspection notes..."/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-secondary text-[18px]">verified</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Action Panel & Live Stream Summary (4 Columns) -->
+<div class="xl:col-span-4 space-y-6">
+<!-- Transaction Authorization Summary Card -->
+<div class="bg-surface rounded-2xl border-2 border-primary/30 p-6 shadow-soft space-y-6 sticky top-24">
+<div class="flex items-center justify-between border-b border-gray-200/60 pb-3">
+<div>
+<span class="text-xs font-medium text-accent font-bold">TRANSACTION SUMMARY</span>
+<h3 class="text-lg font-semibold text-accent">Checkout Readiness</h3>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-tertiary-container/10 text-accent font-medium text-xs font-semibold">
+                Passes All Policies
+              </span>
+</div>
+<!-- Line Item Breakdown -->
+<!-- Line Item Breakdown -->
+<div class="space-y-3.5 text-base ">
+    <div class="p-4 bg-background rounded-xl border border-gray-200 text-center text-sm text-secondary">
+        Select a patron and a book from the main panel to verify checkout readiness and view transaction details.
+    </div>
+</div>
+<!-- Primary Action CTA Cluster -->
+<div class="space-y-2.5 pt-2">
+<button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-accent hover:bg-accent-container text-white font-semibold text-lg shadow-soft flex items-center justify-center gap-2 active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[22px]">check</span>
+<span>Confirm &amp; Complete Issue (Enter ↵)</span>
+</button>
+<button type="button" class="w-full py-2.5 px-4 rounded-xl bg-surface-bright border border-gray-200 hover:bg-background text-accent font-medium text-sm flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[18px]">print</span>
+<span>Issue &amp; Print Date Slip</span>
+</button>
+<button type="button" class="w-full py-2.5 px-4 rounded-xl bg-surface-bright border border-gray-200 hover:bg-background text-accent font-medium text-sm flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[18px]">queue</span>
+<span>Queue Another Book for Same Patron</span>
+</button>
+<a href="{% url 'transactions:issue' %}" class="block w-full py-2 text-center text-sm  text-secondary hover:text-red-500 transition-colors">
+                Cancel Checkout
+</a>
+</div>
+</div>
+<!-- Desk Activity Queue Widget (Mini Feed) -->
+<div class="bg-surface rounded-2xl border border-gray-200 p-5 shadow-soft space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">history</span>
+<h4 class="text-lg font-semibold text-accent">Recent Desk Activity</h4>
+</div>
+<span class="text-xs font-medium text-accent">Live Stream</span>
+</div>
+<!-- Mini List Items -->
+<div class="space-y-3">
+{% for txn in recent_transactions %}
+<div class="flex items-start justify-between p-2.5 rounded-xl bg-surface-bright border border-gray-200/60">
+<div class="space-y-0.5 max-w-[210px]">
+<div class="text-sm font-medium text-accent truncate">{{ txn.book.title }}</div>
+<div class="text-sm  text-secondary">Issued to {{ txn.member.get_full_name|default:txn.member.username }} • {{ txn.issue_date|date:"M d" }}</div>
+</div>
+<a href="{% url 'transactions:history' %}" class="text-xs font-medium text-secondary hover:text-accent transition-colors p-1" title="View Transaction">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</a>
+</div>
+{% empty %}
+<div class="text-sm text-secondary text-center p-4">No recent activity today.</div>
+{% endfor %}
+</div>
+<div class="pt-1 text-center">
+<a class="text-sm  text-accent hover:underline" href="#">View All Session Logs (48 Today)</a>
+</div>
+</div>
+</div>
+</form>
+
+{% endblock %}

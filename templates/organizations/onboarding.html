@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Onboard Organization - SmartLibrary Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- Header -->
+    <div class="text-center">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Onboard New Organization</h1>
+        <p class="mt-2 text-sm leading-8 text-gray-600">Complete the steps below to setup a new tenant in the platform.</p>
+    </div>
+
+    <!-- Progress Steps -->
+    <nav aria-label="Progress">
+        <ol role="list" class="flex items-center justify-center space-x-4 sm:space-x-8">
+            {% for i in '12345'|make_list %}
+            <li class="relative">
+                <div class="flex items-center justify-center">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-full {% if forloop.counter < step %}bg-black{% elif forloop.counter == step %}border-2 border-black bg-white{% else %}border-2 border-gray-300 bg-white{% endif %}">
+                        {% if forloop.counter < step %}
+                        <svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
+                        <span class="{% if forloop.counter == step %}text-black{% else %}text-gray-500{% endif %} font-medium">{{ forloop.counter }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </li>
+            {% if not forloop.last %}
+            <li class="flex-1 w-12 sm:w-24">
+                <div class="h-0.5 w-full {% if forloop.counter < step %}bg-black{% else %}bg-gray-300{% endif %}"></div>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <!-- Form -->
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+        <form method="post" enctype="multipart/form-data" class="px-4 py-8 sm:p-10">
+            {% csrf_token %}
+            <input type="hidden" name="step" value="{{ step }}">
+            
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold leading-7 text-gray-900">
+                    {% if step == 1 %}Organization Details
+                    {% elif step == 2 %}Branch Setup
+                    {% elif step == 3 %}Administrator Account
+                    {% elif step == 4 %}Library Rules
+                    {% elif step == 5 %}Branding & Theme
+                    {% endif %}
+                </h2>
+                <p class="mt-1 text-sm leading-6 text-gray-500">
+                    {% if step == 1 %}Basic information about the organization.{% endif %}
+                </p>
+            </div>
+
+            {% if form.errors %}
+            <div class="mb-6 rounded-md bg-red-50 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">Please correct the errors below</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            {{ form.errors }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                {% for field in form %}
+                <div class="sm:col-span-{% if field.name in 'address,branch_address' %}6{% else %}3{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900">
+                        {{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    <div class="mt-2">
+                        {% if field.field.widget.input_type == 'file' %}
+                            {{ field }}
+                        {% elif field.name == 'organization_type' %}
+                            <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-black sm:max-w-xs sm:text-sm sm:leading-6">
+                                {% for val, label in field.field.choices %}
+                                    <option value="{{ val }}" {% if field.value == val %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                                   name="{{ field.name }}" 
+                                   id="{{ field.id_for_label }}"
+                                   value="{{ field.value|default_if_none:'' }}"
+                                   class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6">
+                        {% endif %}
+                    </div>
+                    {% if field.help_text %}
+                        <p class="mt-2 text-sm leading-6 text-gray-500">{{ field.help_text }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-10 flex items-center justify-between border-t border-gray-900/10 pt-6">
+                {% if step > 1 %}
+                    <a href="?step={{ step|add:'-1' }}" class="text-sm font-semibold leading-6 text-gray-900 hover:text-black">
+                        <span aria-hidden="true">&larr;</span> Back
+                    </a>
+                {% else %}
+                    <a href="{% url 'organizations:platform' %}" class="text-sm font-semibold leading-6 text-gray-900 hover:text-black">
+                        Cancel
+                    </a>
+                {% endif %}
+                
+                <button type="submit" class="rounded-md bg-black px-8 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+                    {% if step == 5 %}Finish Setup{% else %}Continue{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

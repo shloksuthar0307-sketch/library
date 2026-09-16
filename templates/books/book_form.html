@@ -1,0 +1,165 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}{{ title }} - LIBRIX{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-primary tracking-tight">{{ title|default:"Add New Book" }}</h1>
+        <p class="text-secondary mt-1">{% if book %}Update details for this book in your library collection.{% else %}Add a new book to your library collection.{% endif %}</p>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-8">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-background">
+                <h2 class="text-lg font-semibold text-primary">Basic Information</h2>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-primary mb-2">Book Title <span class="text-red-500">*</span></label>
+                    {{ form.title }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-primary mb-2">Author <span class="text-red-500">*</span></label>
+                    {{ form.author }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-primary mb-2">Publisher</label>
+                    {{ form.publisher }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-primary mb-2">ISBN <span class="text-red-500">*</span></label>
+                    {{ form.isbn }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-primary mb-2">Publication Year</label>
+                    {{ form.publication_year }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-primary mb-2">Description</label>
+                    {{ form.description }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Classification & Inventory -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Classification -->
+            <div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden flex flex-col">
+                <div class="px-6 py-4 border-b border-gray-200 bg-background">
+                    <h2 class="text-lg font-semibold text-primary">Classification</h2>
+                </div>
+                <div class="p-6 space-y-6 flex-1">
+                    <div>
+                        <label class="block text-sm font-medium text-primary mb-2">Category <span class="text-red-500">*</span></label>
+                        {{ form.category }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-primary mb-2">Language</label>
+                        {{ form.language }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-primary mb-2">Edition</label>
+                        {{ form.edition }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory -->
+            <div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden flex flex-col">
+                <div class="px-6 py-4 border-b border-gray-200 bg-background">
+                    <h2 class="text-lg font-semibold text-primary">Inventory</h2>
+                </div>
+                <div class="p-6 space-y-6 flex-1">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-primary mb-2">Total Copies <span class="text-red-500">*</span></label>
+                            {{ form.total_copies }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-primary mb-2">Available Copies <span class="text-red-500">*</span></label>
+                            {{ form.available_copies }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-primary mb-2">Shelf Location</label>
+                        {{ form.shelf_number }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-primary mb-2">Status</label>
+                        {{ form.status }}
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Book Cover -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-background">
+                <h2 class="text-lg font-semibold text-primary">Book Cover</h2>
+            </div>
+            <div class="p-6">
+                <label class="block text-sm font-medium text-primary mb-2">Upload Book Cover</label>
+                
+                <div class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-300 px-6 py-10 hover:bg-background transition-colors">
+                    <div class="text-center">
+                        <span class="material-symbols-outlined text-4xl text-muted mb-2">image</span>
+                        <div class="mt-4 flex text-sm leading-6 text-secondary justify-center">
+                            <label for="id_cover_image" class="relative cursor-pointer rounded-md bg-transparent font-semibold text-accent focus-within:outline-none hover:text-accent-hover">
+                                <span>Upload a file</span>
+                                {{ form.cover_image }}
+                            </label>
+                            <p class="pl-1">or drag and drop</p>
+                        </div>
+                        <p class="text-xs leading-5 text-muted">Supports JPG, PNG up to 10MB</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-4 pt-4">
+            <a href="{% url 'books:list' %}" class="px-5 py-2.5 text-sm font-medium text-secondary hover:text-primary transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="bg-accent hover:bg-accent-hover text-white px-6 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-soft">
+                {% if book %}Save Changes{% else %}Save Book{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Styling the Django form inputs to match the minimalist UI */
+    form input[type="text"], 
+    form input[type="number"], 
+    form select, 
+    form textarea {
+        width: 100%;
+        padding: 0.625rem 0.75rem;
+        background-color: #F8F8F6;
+        border: 1px solid #E5E7EB;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        color: #111111;
+        transition: all 0.2s;
+    }
+    form input:focus, 
+    form select:focus, 
+    form textarea:focus {
+        outline: none;
+        border-color: #10B981;
+        box-shadow: 0 0 0 1px #10B981;
+    }
+    form input[type="file"] {
+        display: none;
+    }
+</style>
+{% endblock %}

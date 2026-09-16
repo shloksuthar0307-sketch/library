@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Organizations - SmartLibrary Platform{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Organizations</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage tenant organizations on the platform.</p>
+        </div>
+        <div>
+            <a href="{% url 'organizations:onboard' %}"
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors">
+                <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Onboard Organization
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <form method="get" class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <label for="q" class="sr-only">Search</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <input type="text" name="q" id="q" value="{{ current_q }}"
+                               class="focus:ring-black focus:border-black block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                               placeholder="Search by name, email, or slug...">
+                    </div>
+                </div>
+                <div>
+                    <select name="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-black focus:border-black sm:text-sm rounded-md">
+                        <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Statuses</option>
+                        <option value="active" {% if current_status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="suspended" {% if current_status == 'suspended' %}selected{% endif %}>Suspended</option>
+                    </select>
+                </div>
+                <div>
+                    <select name="type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-black focus:border-black sm:text-sm rounded-md">
+                        <option value="all" {% if current_type == 'all' %}selected{% endif %}>All Types</option>
+                        {% for type_val, type_label in org_types %}
+                        <option value="{{ type_val }}" {% if current_type == type_val %}selected{% endif %}>{{ type_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Organization List Table -->
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg overflow-hidden">
+        <ul role="list" class="divide-y divide-gray-100">
+            {% for org in organizations %}
+            <li class="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6 transition-colors">
+                <div class="flex min-w-0 gap-x-4">
+                    <div class="h-12 w-12 flex-none rounded-md bg-gray-100 flex items-center justify-center ring-1 ring-gray-900/10">
+                        {% if org.logo %}
+                            <img src="{{ org.logo.url }}" alt="{{ org.name }}" class="h-10 w-10 object-contain rounded-sm" />
+                        {% else %}
+                            <span class="text-xl font-medium text-gray-600">{{ org.name|make_list|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="min-w-0 flex-auto">
+                        <p class="text-sm font-semibold leading-6 text-gray-900">
+                            <a href="{% url 'organizations:detail' org.pk %}">
+                                <span class="absolute inset-x-0 -top-px bottom-0"></span>
+                                {{ org.name }}
+                            </a>
+                        </p>
+                        <p class="mt-1 flex text-xs leading-5 text-gray-500">
+                            <span class="truncate">{{ org.slug }}</span>
+                            <span class="mx-2">&middot;</span>
+                            <span>{{ org.get_organization_type_display }}</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex shrink-0 items-center gap-x-6">
+                    <div class="hidden sm:flex sm:flex-col sm:items-end">
+                        <p class="text-sm leading-6 text-gray-900">
+                            {{ org.user_count }} Users &middot; {{ org.member_count }} Members &middot; {{ org.book_count }} Books
+                        </p>
+                        {% if org.is_active %}
+                        <div class="mt-1 flex items-center gap-x-1.5">
+                            <div class="flex-none rounded-full bg-emerald-500/20 p-1">
+                                <div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
+                            </div>
+                            <p class="text-xs leading-5 text-gray-500">Active ({{ org.get_subscription_status_display }})</p>
+                        </div>
+                        {% else %}
+                        <div class="mt-1 flex items-center gap-x-1.5">
+                            <div class="flex-none rounded-full bg-red-500/20 p-1">
+                                <div class="h-1.5 w-1.5 rounded-full bg-red-500"></div>
+                            </div>
+                            <p class="text-xs leading-5 text-gray-500">Suspended</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </li>
+            {% empty %}
+            <li class="px-4 py-12 sm:px-6 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <h3 class="mt-2 text-sm font-semibold text-gray-900">No organizations found</h3>
+                <p class="mt-1 text-sm text-gray-500">Get started by creating a new organization.</p>
+                <div class="mt-6">
+                    <a href="{% url 'organizations:onboard' %}" class="inline-flex items-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">
+                        <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Onboard Organization
+                    </a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

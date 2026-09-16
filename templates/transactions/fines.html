@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Fines & Penalties - LIBRIX{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-primary tracking-tight">Fines & Penalties</h1>
+        <p class="text-secondary mt-1">Track overdue fees, collect payments, and waive fines.</p>
+    </div>
+    {% if is_staff %}
+    <button onclick="document.getElementById('assessFineModal').classList.remove('hidden')"
+        class="bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-soft flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">add</span>
+        Assess Manual Fine
+    </button>
+    {% endif %}
+</div>
+
+<!-- Stats Row -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-red-500 text-[20px]">pending_actions</span>
+            </div>
+            <span class="text-sm font-medium text-secondary">Outstanding Fines</span>
+        </div>
+        <p class="text-3xl font-bold text-red-500">₹{{ total_outstanding }}</p>
+        <p class="text-xs text-muted mt-1">{{ unpaid_count }} unpaid account{{ unpaid_count|pluralize }}</p>
+    </div>
+    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-accent text-[20px]">payments</span>
+            </div>
+            <span class="text-sm font-medium text-secondary">Collected</span>
+        </div>
+        <p class="text-3xl font-bold text-accent">₹{{ total_collected }}</p>
+        <p class="text-xs text-muted mt-1">Successfully collected fines</p>
+    </div>
+    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-secondary text-[20px]">receipt_long</span>
+            </div>
+            <span class="text-sm font-medium text-secondary">Total Fines Issued</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ total_count }}</p>
+        <p class="text-xs text-muted mt-1">All time fine records</p>
+    </div>
+</div>
+
+<!-- Fines Table -->
+<div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 bg-background flex items-center justify-between">
+        <h2 class="text-base font-semibold text-primary">Fine Ledger</h2>
+        <span class="text-sm text-secondary">{{ total_count }} records</span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-gray-200 bg-background text-xs font-semibold text-muted uppercase tracking-wider">
+                    <th class="px-4 py-3">Member</th>
+                    <th class="px-4 py-3">Book</th>
+                    <th class="px-4 py-3">Issue Date</th>
+                    <th class="px-4 py-3">Due Date</th>
+                    <th class="px-4 py-3">Return Date</th>
+                    <th class="px-4 py-3">Fine Amount</th>
+                    <th class="px-4 py-3">Status</th>
+                    {% if is_staff %}<th class="px-4 py-3 text-right">Action</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for fine in fines %}
+                <tr class="hover:bg-gray-50 transition-colors group">
+                    <td class="px-4 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                {{ fine.member.username|first|upper }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-primary">{{ fine.member.get_full_name|default:fine.member.username }}</p>
+                                <p class="text-xs text-muted">{{ fine.member.email }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-4">
+                        <p class="text-sm font-medium text-primary">{{ fine.book.title }}</p>
+                        <p class="text-xs text-muted">{{ fine.book.author.name|default:"—" }}</p>
+                    </td>
+                    <td class="px-4 py-4 text-sm text-secondary">{{ fine.issue_date|date:"M d, Y" }}</td>
+                    <td class="px-4 py-4 text-sm text-red-500 font-medium">{{ fine.due_date|date:"M d, Y" }}</td>
+                    <td class="px-4 py-4 text-sm text-secondary">{{ fine.return_date|date:"M d, Y"|default:"Not returned" }}</td>
+                    <td class="px-4 py-4">
+                        <span class="text-base font-bold {% if fine.fine_paid %}text-accent{% else %}text-red-500{% endif %}">
+                            ₹{{ fine.fine_amount }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-4">
+                        {% if fine.fine_paid %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Paid
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Unpaid
+                        </span>
+                        {% endif %}
+                    </td>
+                    {% if is_staff %}
+                    <td class="px-4 py-4 text-right">
+                        {% if not fine.fine_paid %}
+                        <form method="POST" action="{% url 'transactions:fine_paid' fine.pk %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="px-3 py-1.5 bg-accent hover:bg-accent-hover text-white rounded-lg text-xs font-medium transition-colors shadow-soft">
+                                Mark Paid
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="text-xs text-muted">Settled</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_staff %}8{% else %}7{% endif %}" class="px-4 py-16 text-center">
+                        <span class="material-symbols-outlined text-5xl text-muted block mb-3">receipt_long</span>
+                        <p class="text-secondary font-medium">No fines recorded yet.</p>
+                        <p class="text-muted text-sm mt-1">Fines are automatically generated when books are returned late.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Assess Manual Fine Modal -->
+<div id="assessFineModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+    <div class="bg-surface rounded-xl border border-gray-200 shadow-xl w-full max-w-md">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-primary">Assess Manual Fine</h2>
+            <button onclick="document.getElementById('assessFineModal').classList.add('hidden')"
+                class="p-1 rounded-lg text-secondary hover:bg-gray-100 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-secondary">Manual fines are applied to existing overdue transactions. To issue a fine, first mark the transaction as overdue from the <a href="{% url 'transactions:history' %}" class="text-accent hover:underline">Transaction History</a> page.</p>
+            <a href="{% url 'transactions:history' %}"
+                class="block w-full text-center px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-colors shadow-soft">
+                Go to Transaction History
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

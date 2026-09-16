@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+
+{% block title %}Fallback - SmartLibrary{% endblock %}
+
+{% block content %}
+
+<!-- BREADCRUMBS & PIPELINE HEADER BAR -->
+<section class="bg-surface border-b border-gray-200 px-6 py-3.5 flex-shrink-0">
+<!-- Breadcrumb row -->
+<div class="flex items-center gap-2 text-xs font-medium text-secondary mb-2 overflow-x-auto whitespace-nowrap">
+<span class="hover:text-accent cursor-pointer">Library Administration</span>
+<span class="text-outline-variant">/</span>
+<span class="hover:text-accent cursor-pointer">Intelligence &amp; Analytics</span>
+<span class="text-outline-variant">/</span>
+<span class="hover:text-accent cursor-pointer">Report Pipelines</span>
+<span class="text-outline-variant">/</span>
+<span class="text-accent font-semibold">Pipeline #EX-8902</span>
+<span class="text-outline-variant">/</span>
+<span class="text-accent font-semibold px-2 py-0.5 bg-accent/10 rounded">MIME Fallback Preview</span>
+</div>
+<!-- Pipeline Title & Primary Actions -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-accent border border-gray-200">
+<span class="material-symbols-outlined text-xl" data-icon="text_snippet">text_snippet</span>
+</div>
+<div>
+<div class="flex items-center gap-2.5 flex-wrap">
+<h1 class="text-headline-sm font-headline-sm text-accent font-bold tracking-tight">Pipeline #EX-8902: Plain Text MIME Fallback</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                  MIME: multipart/alternative (RFC 2046 Compliant)
+                </span>
+<span class="px-2 py-0.5 rounded bg-gray-50 text-secondary text-xs font-medium font-mono border border-gray-200">
+                  7-bit ASCII &amp; UTF-8 Validated
+                </span>
+<span class="text-sm  text-secondary font-mono text-xs">Payload: 18.4 KB</span>
+</div>
+<p class="text-sm  text-accent-variant mt-0.5">
+                Compliant plain-text counterpart automatically dispatched to low-bandwidth links, screen readers, and terminal MUAs (Lynx, Mutt, Alpine).
+              </p>
+</div>
+</div>
+<!-- Action Cluster -->
+<div class="flex items-center gap-2 flex-shrink-0">
+<button class="px-3 py-1.5 bg-background hover:bg-gray-50 border border-gray-200 rounded-lg text-sm  font-semibold text-accent flex items-center gap-1.5 transition-colors shadow-soft">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="data_object">data_object</span>
+<span class="">Raw MIME Source</span>
+<kbd class="text-[10px] font-mono text-secondary bg-surface px-1 py-0.5 rounded border border-gray-200">⌘U</kbd>
+</button>
+<button class="px-3 py-1.5 bg-background hover:bg-gray-50 border border-gray-200 rounded-lg text-sm  font-semibold text-accent flex items-center gap-1.5 transition-colors shadow-soft">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="content_copy">content_copy</span>
+<span class="">Copy Plaintext</span>
+</button>
+<button class="px-3 py-1.5 bg-background hover:bg-gray-50 border border-gray-200 rounded-lg text-sm  font-semibold text-accent flex items-center gap-1.5 transition-colors shadow-soft">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="mail">mail</span>
+<span class="">Send Test Email</span>
+</button>
+<button class="px-3.5 py-1.5 bg-accent hover:bg-accent-container text-white rounded-lg text-sm  font-semibold flex items-center gap-1.5 transition-colors shadow">
+<span class="material-symbols-outlined text-sm" data-icon="save">save</span>
+<span class="">Save Template</span>
+</button>
+</div>
+</div>
+</section>
+<!-- CONTENT SPLIT VIEW: CONFIG INSPECTOR (LEFT) & MONOSPACE TERMINAL VIEWER (RIGHT) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- LEFT CONFIGURATION & INSPECTOR PANEL (Width: 380px) -->
+<div class="w-[390px] flex-shrink-0 bg-surface border-r border-gray-200 flex flex-col overflow-y-auto custom-scrollbar">
+<!-- Section 1: MIME Parameters -->
+<div class="p-4 border-b border-gray-200/80">
+<div class="flex items-center justify-between mb-3">
+<span class="text-xs font-medium uppercase tracking-wider text-secondary font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-accent" data-icon="tune">tune</span>
+                MIME Part Parameters
+              </span>
+<span class="text-xs font-medium font-mono text-accent bg-background px-1.5 py-0.5 rounded border border-gray-200">RFC 2046 / §5.1.3</span>
+</div>
+<div class="space-y-3">
+<div>
+<label class="text-xs font-medium text-accent-variant font-medium block mb-1">Content-Type Header</label>
+<div class="px-2.5 py-1.5 bg-background border border-gray-200 rounded-md font-mono text-xs text-accent select-all">
+                  text/plain; charset=UTF-8; format=flowed
+                </div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-xs font-medium text-accent-variant font-medium block mb-1">Encoding</label>
+<div class="px-2.5 py-1 bg-surface border border-gray-200 rounded text-xs font-mono text-accent flex items-center justify-between">
+<span class="">quoted-printable</span>
+<span class="material-symbols-outlined text-xs text-secondary" data-icon="lock">lock</span>
+</div>
+</div>
+<div>
+<label class="text-xs font-medium text-accent-variant font-medium block mb-1">Line Wrap Standard</label>
+<div class="px-2.5 py-1 bg-surface border border-gray-200 rounded text-xs font-mono text-accent font-semibold flex items-center justify-between">
+<span class="">78 cols (Strict)</span>
+<span class="material-symbols-outlined text-xs text-accent" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Plaintext Formatting Rules & Dynamic Parser -->
+<div class="p-4 border-b border-gray-200/80">
+<span class="text-xs font-medium uppercase tracking-wider text-secondary font-bold flex items-center gap-1.5 mb-3">
+<span class="material-symbols-outlined text-sm text-accent" data-icon="transform">transform</span>
+              Plaintext Formatting Rules
+            </span>
+<div class="space-y-2.5">
+<!-- Toggle 1 -->
+<label class="flex items-start justify-between gap-3 p-2 bg-background/50 hover:bg-background border border-gray-200/60 rounded-lg cursor-pointer transition-colors">
+<div class="flex-1">
+<div class="text-sm  font-medium text-accent">Convert HTML Tables to ASCII Grid</div>
+<div class="text-[11px] text-secondary">Renders markdown-like boxed grids (+---+---+) for tabular telemetry.</div>
+</div>
+<input checked="" class="mt-1 h-4 w-4 rounded border-gray-300 text-accent focus:ring-primary" type="checkbox">
+</label>
+<!-- Toggle 2 -->
+<label class="flex items-start justify-between gap-3 p-2 bg-background/50 hover:bg-background border border-gray-200/60 rounded-lg cursor-pointer transition-colors">
+<div class="flex-1">
+<div class="text-sm  font-medium text-accent">Preserve Semantic Screen Reader Syntax</div>
+<div class="text-[11px] text-secondary">Retains strict numbered footnotes and explicit Section 508 headers.</div>
+</div>
+<input checked="" class="mt-1 h-4 w-4 rounded border-gray-300 text-accent focus:ring-primary" type="checkbox">
+</label>
+<!-- Toggle 3 -->
+<label class="flex items-start justify-between gap-3 p-2 bg-background/50 hover:bg-background border border-gray-200/60 rounded-lg cursor-pointer transition-colors">
+<div class="flex-1">
+<div class="text-sm  font-medium text-accent">Replace Imagery with Direct Footnote URLs</div>
+<div class="text-[11px] text-secondary">Converts embedded SVG charts to labeled secure HTTPS deep links.</div>
+</div>
+<input checked="" class="mt-1 h-4 w-4 rounded border-gray-300 text-accent focus:ring-primary" type="checkbox">
+</label>
+<!-- Toggle 4 -->
+<label class="flex items-start justify-between gap-3 p-2 bg-background/50 hover:bg-background border border-gray-200/60 rounded-lg cursor-pointer transition-colors">
+<div class="flex-1">
+<div class="text-sm  font-medium text-accent">Strict 72/78-Character Hard Wrap</div>
+<div class="text-[11px] text-secondary">Guarantees zero horizontal scrollbars on legacy terminal displays.</div>
+</div>
+<input checked="" class="mt-1 h-4 w-4 rounded border-gray-300 text-accent focus:ring-primary" type="checkbox">
+</label>
+</div>
+</div>
+<!-- Section 3: Fallback Trigger Diagnostics & Client Emulation -->
+<div class="p-4 border-b border-gray-200/80">
+<div class="flex items-center justify-between mb-2.5">
+<span class="text-xs font-medium uppercase tracking-wider text-secondary font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-accent" data-icon="devices">devices</span>
+                Client Emulation &amp; Fallback Triggers
+              </span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-tertiary-container text-on-tertiary-container">100% Score</span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-xs">
+<div class="p-2.5 bg-background rounded border border-gray-200/70">
+<div class="flex items-center justify-between font-semibold text-accent mb-1">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm text-accent" data-icon="terminal">terminal</span> Mutt / Alpine</span>
+<span class="text-accent text-[10px]">100%</span>
+</div>
+<p class="text-[11px] text-secondary">Terminal VT100 parser compatible; no unicode corruption.</p>
+</div>
+<div class="p-2.5 bg-background rounded border border-gray-200/70">
+<div class="flex items-center justify-between font-semibold text-accent mb-1">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm text-accent" data-icon="visibility">visibility</span> NVDA / JAWS</span>
+<span class="text-accent text-[10px]">PASS</span>
+</div>
+<p class="text-[11px] text-secondary">Section 508 and WCAG 2.1 AAA accessibility score.</p>
+</div>
+<div class="p-2.5 bg-background rounded border border-gray-200/70">
+<div class="flex items-center justify-between font-semibold text-accent mb-1">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm text-accent" data-icon="shield">shield</span> Outlook Trust</span>
+<span class="text-accent text-[10px]">PASSED</span>
+</div>
+<p class="text-[11px] text-secondary">Bypasses external image blockers via clean plaintext.</p>
+</div>
+<div class="p-2.5 bg-background rounded border border-gray-200/70">
+<div class="flex items-center justify-between font-semibold text-accent mb-1">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm text-accent" data-icon="network_check">network_check</span> Low Bandwidth</span>
+<span class="text-accent text-[10px]">18.4 KB</span>
+</div>
+<p class="text-[11px] text-secondary">94% payload compression vs full HTML multipart.</p>
+</div>
+</div>
+</div>
+<!-- Section 4: Dynamic Token Replacements -->
+<div class="p-4 flex-1">
+<span class="text-xs font-medium uppercase tracking-wider text-secondary font-bold flex items-center gap-1.5 mb-2.5">
+<span class="material-symbols-outlined text-sm text-accent" data-icon="code">code</span>
+              Dynamic Plaintext Tokens
+            </span>
+<div class="space-y-1.5 text-xs font-mono">
+<div class="flex items-center justify-between p-1.5 bg-background/60 rounded border border-gray-200/60">
+<span class="text-accent font-medium">{{report.name}}</span>
+<span class="text-secondary text-[11px]">Executive Circulation Digest</span>
+</div>
+<div class="flex items-center justify-between p-1.5 bg-background/60 rounded border border-gray-200/60">
+<span class="text-accent font-medium">{{circulation.total}}</span>
+<span class="text-secondary text-[11px]">48,290 items</span>
+</div>
+<div class="flex items-center justify-between p-1.5 bg-background/60 rounded border border-gray-200/60">
+<span class="text-accent font-medium">{{reshelve_sla}}</span>
+<span class="text-secondary text-[11px]">96.4% Compliance</span>
+</div>
+<div class="flex items-center justify-between p-1.5 bg-background/60 rounded border border-gray-200/60">
+<span class="text-accent font-medium">{{sso_dashboard_url}}</span>
+<span class="text-secondary text-[11px]">Secure HMAC-signed Deep Link</span>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT MAIN AREA: REALISTIC PLAIN TEXT TERMINAL & EMAIL FALLBACK VIEWER -->
+<div class="flex-1 flex flex-col bg-slate-950 overflow-hidden">
+<!-- VIEWER TOOLBAR -->
+<div class="h-12 bg-surface border-b border-gray-200 px-5 flex items-center justify-between flex-shrink-0">
+<!-- View Mode Switcher -->
+<div class="flex items-center bg-gray-50 p-0.5 rounded-lg border border-gray-200">
+<button class="px-3 py-1 bg-surface text-accent shadow-soft rounded-md text-sm font-medium font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-accent" data-icon="terminal">terminal</span>
+                Rendered Monospace View
+              </button>
+<button class="px-3 py-1 text-secondary hover:text-accent rounded-md text-sm font-medium font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm" data-icon="description">description</span>
+                Raw RFC 2822 Headers &amp; Body
+              </button>
+<button class="px-3 py-1 text-secondary hover:text-accent rounded-md text-sm font-medium font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm" data-icon="record_voice_over">record_voice_over</span>
+                Screen Reader Transcript
+              </button>
+</div>
+<!-- Terminal Geometry Controls, Theme Switcher & Metrics -->
+<div class="flex items-center gap-3 text-xs">
+<!-- Terminal Theme Switcher Selector -->
+<div class="flex items-center bg-background border border-gray-200 rounded p-0.5"><button class="px-2 py-0.5 text-secondary hover:text-accent text-[11px] font-mono flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span><span class="">Paper</span></button><button class="px-2.5 py-0.5 bg-emerald-950/80 text-emerald-300 font-semibold shadow-soft rounded text-[11px] font-mono flex items-center gap-1.5 border border-emerald-500/60"><span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shadow-[0_0_6px_#34d399]"></span><span class="">CRT Green</span></button><button class="px-2 py-0.5 text-secondary hover:text-amber-600 text-[11px] font-mono flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span><span class="">VT220 Amber</span></button></div>
+<!-- Ruler guide status -->
+<div class="hidden xl:flex items-center gap-2 text-secondary bg-background px-2 py-1 rounded border border-gray-200">
+<span class="material-symbols-outlined text-xs text-emerald-600" data-icon="straighten">straighten</span>
+<span class="font-mono text-[11px]">Max: <strong class="text-accent font-semibold">76/78 cols</strong></span>
+</div>
+<!-- Line numbers toggle -->
+<label class="flex items-center gap-1.5 text-secondary cursor-pointer hover:text-accent">
+<input checked="" class="h-3.5 w-3.5 rounded border-gray-300 text-accent focus:ring-0" type="checkbox">
+<span class="text-[11px]">Line numbers</span>
+</label>
+<!-- Font Size Segment -->
+<div class="flex items-center gap-1 bg-background border border-gray-200 rounded px-2 py-0.5 text-[11px] font-mono text-secondary"><span class="material-symbols-outlined text-xs text-emerald-500" data-icon="terminal">terminal</span><span class="text-accent font-semibold">VT100 (P1)</span></div>
+</div>
+</div>
+<!-- COLUMN RULER BANNER (Dark CRT terminal style) -->
+<div class="bg-[#080e08] border-b border-emerald-900/60 px-6 py-1 flex items-center justify-between text-[10px] font-mono text-emerald-500/70 select-none flex-shrink-0"><div class="flex items-center gap-2 font-mono"><span class="text-emerald-400 font-bold tracking-wider">COL RULER:</span><span class="text-emerald-500/80 tracking-widest font-mono">00........10........20........30........40........50........60........70....78</span></div><div class="text-emerald-500/80 flex items-center gap-1.5 font-mono text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]"></span><span class="text-emerald-300 font-medium">TTY: /dev/pts/2 [vt100 · p1-green · 80x48 · 78c hardwrap]</span></div></div>
+<!-- MONOSPACE TEXT VIEWER CONTAINER -->
+<div class="flex-1 p-6 overflow-auto custom-scrollbar flex justify-center bg-[#030603]"><div class="w-full max-w-4xl bg-[#060b06] border border-emerald-800/60 rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.15)] p-7 flex flex-col font-code text-[13px] leading-[22px] text-emerald-400 select-text relative"><div class="flex items-center justify-between pb-3 mb-5 border-b border-emerald-900/80 text-xs font-mono select-none"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-700/60"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-900/60"></span><span class="ml-2 text-emerald-300 font-semibold tracking-wider text-[11px]">TERM: CRT-GREEN FALLBACK STREAM (RAW_VT100)</span></div><div class="flex items-center gap-3 text-[11px] text-emerald-500/80"><span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50 font-bold shadow-[0_0_6px_rgba(16,185,129,0.3)]">ONLINE</span><span class="">CRLF [\r\n]</span><span class="">8,924 BYTES</span></div></div><div class="bg-[#091209] border border-emerald-900/80 rounded-lg p-4 mb-6 text-xs leading-5 font-mono text-emerald-300/90 shadow-inner"><div class=""><strong class="text-emerald-400 w-24 inline-block font-mono font-bold">Date:</strong> Mon, 28 Oct 2024 06:00:02 -0400 (EDT)</div><div class=""><strong class="text-emerald-400 w-24 inline-block font-mono font-bold">From:</strong> "SmartLibrary Intelligence" &lt;analytics-daemon@library.university.edu&gt;</div><div class=""><strong class="text-emerald-400 w-24 inline-block font-mono font-bold">To:</strong> "Dr. Evelyn Vance" &lt;e.vance@university.edu&gt;</div><div class=""><strong class="text-emerald-400 w-24 inline-block font-mono font-bold">Subject:</strong> [DIGEST] Executive Circulation &amp; Operational Telemetry (Week 44)</div><div class=""><strong class="text-emerald-400 w-24 inline-block font-mono font-bold">Message-ID:</strong> &lt;20241028060002.EX8902.9421@mail.library.university.edu&gt;</div><div class=""><strong class="text-emerald-400 w-24 inline-block font-mono font-bold">MIME-Version:</strong> 1.0</div><div class=""><strong class="text-emerald-400 w-24 inline-block font-mono font-bold">Content-Type:</strong> text/plain; charset=UTF-8; format=flowed</div><div class=""><strong class="text-emerald-400 w-24 inline-block font-mono font-bold">Content-Transfer-Encoding:</strong> 7bit</div></div><pre class="whitespace-pre font-code text-emerald-400 text-[13px] leading-[21px] tracking-normal select-text drop-shadow-[0_0_1px_rgba(52,211,153,0.4)]">==============================================================================
+SMARTLIBRARY ENTERPRISE STEWARDSHIP - EXECUTIVE DIGEST
+Metropolitan Research University | Office of Academic Resources
+Pipeline Ref: #EX-8902 | Edition: Week 44, Fall 2024
+Dispatch Timestamp: 2024-10-28 06:00:02 EDT
+==============================================================================
+
+Dear Dr. Vance,
+
+This automated executive intelligence digest provides your weekly overview 
+of physical collection circulation, high-demand hold queues, digital 
+repository throughput, and RFID portal hardware health across all university 
+libraries.
+
+------------------------------------------------------------------------------
+[1.0] EXECUTIVE TELEMETRY &amp; KPI SUMMARY
+------------------------------------------------------------------------------
+
++-----------------------------+--------------+-----------+-------------------+
+| Metric Indicator            | Value (W44)  | Delta WoW | Operational State |
++-----------------------------+--------------+-----------+-------------------+
+| Physical Checkouts          | 48,290 items | +14.2%    | NOMINAL           |
+| Return Turnover Rate        | 3.42x        | +0.18x    | OPTIMAL           |
+| 24-Hour Reshelve SLA        | 96.4%        | +1.1%     | COMPLIANT (&gt;95%)  |
+| RFID Gateway Fleet Status   | 14/14 Online | 100.0%    | STABLE            |
+| Overdue Notice Recovery     | $1,420.00    | -4.5%     | CLEARING          |
++-----------------------------+--------------+-----------+-------------------+
+
+Key Note: The mid-semester midterm examination surge has increased 
+undergraduate circulation by 18% in the Science &amp; Engineering Annex. 
+Automated book returns experienced zero mechanical jams over the trailing 
+168 hours.
+
+
+------------------------------------------------------------------------------
+[2.0] CRITICAL HOLD QUEUE EXCEPTIONS (&gt; 5 HOLDS PER COPY)
+------------------------------------------------------------------------------
+
+The following items currently exceed the university reserve threshold 
+and warrant automated acquisition or patron loan re-allocation:
+
+Item Ref #   Title &amp; Author                   Copies   Holds   Ratio   Status
+------------------------------------------------------------------------------
+QA76.9 .D3   Designing Data-Intensive Apps     12       68      5.6x    RE-ORDER
+             (Martin Kleppmann)
+
+QA76.73 .J38 Algorithms (4th Edition)          8        41      5.1x    INSPECTION
+             (Robert Sedgewick)
+
+QA76.76 .C64 Clean Code                       14        74      5.2x    RE-ORDER
+             (Robert C. Martin)
+------------------------------------------------------------------------------
+Automated recommendation: Execute acquisition batch #ACQ-2024-88 via 
+Coutts/GOBI integration to balance hold-to-copy ratio below 3.0x.
+
+
+------------------------------------------------------------------------------
+[3.0] ACTION DEEP LINKS &amp; VERIFIED DISPATCH MANIFEST
+------------------------------------------------------------------------------
+
+To access the interactive data models, review automated purchasing orders, 
+or download raw CSV dumps, navigate to the secure authenticated endpoints 
+below:
+
+[1] Interactive Web Executive Dashboard:
+    https://library.university.edu/sso/digest/ex-8902?auth=hmac_98a7c29f041e
+
+[2] Download Complete PDF Briefing Document (14.2 MB):
+    https://library.university.edu/reports/export/EX-8902-W44.pdf?token=sec508
+
+[3] SFTP Raw Audit Manifest (CSV &amp; JSON-LD):
+    sftp://vault.library.university.edu/export/telemetry/2024-W44-full.csv.gz
+
+[4] Manage Notification Pipeline Parameters:
+    https://library.university.edu/admin/pipelines/EX-8902/settings
+
+
+------------------------------------------------------------------------------
+[4.0] REGULATORY COMPLIANCE &amp; CRYPTOGRAPHIC VERIFICATION
+------------------------------------------------------------------------------
+
+Notice of Confidentiality &amp; Privacy:
+This automated transmission contains aggregated educational telemetry protected
+under the Family Educational Rights and Privacy Act (FERPA, 34 CFR Part 99) and
+applicable University Data Governance policies. Unauthorized redistribution is
+strictly prohibited.
+
+RFC 2046 MIME Diagnostic Record:
+- MIME-Type: multipart/alternative (text/plain segment)
+- Message Digest (SHA-256):
+  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+- Canonicalization: relaxed/simple
+- DKIM Signature Validated: dkim=pass header.i=@library.university.edu
+- Delivery Channel: SMTP via postfix-relay-04.campus.internal [10.42.1.88]
+
+To modify your subscription preferences or switch to HTML email mode:
+https://library.university.edu/preferences/digest?user=e.vance
+==============================================================================
+SmartLibrary System v4.18.2 | Metropolitan Research University Libraries
+</pre><div class="mt-8 pt-4 border-t border-emerald-900/80 flex items-center justify-between text-xs text-emerald-500/70 font-mono"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-sm text-emerald-400" data-icon="check_circle">check_circle</span><span class="text-emerald-300 font-medium">End of Plain Text Fallback Payload (1,142 words, 8,924 bytes characters)</span></div><div class="text-[11px] text-emerald-500/70 font-mono">Encoding: US-ASCII subset of UTF-8 | CRLF (0x0D 0x0A) Terminated</div></div></div></div>
+</div>
+</div>
+<!-- BOTTOM TEST DISPATCH & VALIDATION FOOTER BAR -->
+<footer class="h-16 bg-surface border-t border-gray-200 px-6 flex items-center justify-between flex-shrink-0 z-20">
+<!-- Validation Checklist -->
+<div class="flex items-center gap-5 text-xs font-medium">
+<span class="text-secondary font-bold uppercase tracking-wider text-[10px]">Pre-Flight Audit:</span>
+<div class="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+<span class="material-symbols-outlined text-xs" data-icon="check">check</span>
+<span class="">Line length ≤ 78: <strong>PASS</strong></span>
+</div>
+<div class="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+<span class="material-symbols-outlined text-xs" data-icon="check">check</span>
+<span class="">Zero Broken Links: <strong>PASS (4/4 Valid)</strong></span>
+</div>
+<div class="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+<span class="material-symbols-outlined text-xs" data-icon="check">check</span>
+<span class="">RFC 5322 Standards: <strong>100%</strong></span>
+</div>
+<div class="hidden xl:flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+<span class="material-symbols-outlined text-xs" data-icon="check">check</span>
+<span class="">Screen Reader Safe (Section 508): <strong>PASS</strong></span>
+</div>
+</div>
+<!-- Flow Navigation Buttons -->
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-background hover:bg-gray-50 text-accent border border-gray-200 rounded-lg text-sm  font-semibold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_back">arrow_back</span>
+<span class="">Back to Multi-Channel Preview</span>
+</button>
+<button class="px-5 py-2 bg-accent hover:bg-accent-container text-white rounded-lg text-sm  font-semibold flex items-center gap-2 transition-all shadow hover:shadow-soft active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="done_all">done_all</span>
+<span class="">Approve &amp; Commit MIME Fallback</span>
+<kbd class="text-[10px] font-mono text-white/90 bg-white/20 px-1 py-0.5 rounded ml-1">⌘S</kbd>
+</button>
+</div>
+</footer>
+
+{% endblock %}

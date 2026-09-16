@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}System Audit Logs - SmartLibrary{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">System Audit Logs</h1>
+            <p class="text-sm text-gray-500 mt-1">Review administrative actions and security events across your organization.</p>
+        </div>
+    </div>
+
+    <!-- Audit Logs Table -->
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Timestamp</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">User</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Action</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Module</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Details</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">IP Address</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    {% for log in logs %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">
+                            <div class="flex flex-col">
+                                <span class="font-medium text-gray-900">{{ log.timestamp|date:"M d, Y" }}</span>
+                                <span class="text-xs text-gray-500">{{ log.timestamp|time:"H:i:s" }}</span>
+                            </div>
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
+                            {% if log.user %}
+                                <div class="flex items-center">
+                                    <div class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center mr-2">
+                                        <span class="text-xs font-medium text-gray-600">{{ log.user.username|make_list|first|upper }}</span>
+                                    </div>
+                                    {{ log.user.username }}
+                                </div>
+                            {% else %}
+                                <span class="text-gray-400 italic">System</span>
+                            {% endif %}
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm">
+                            <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {{ log.module }}
+                        </td>
+                        <td class="px-3 py-4 text-sm text-gray-500 max-w-md truncate" title="{{ log.description }}">
+                            {{ log.description }}
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-mono text-xs">
+                            {{ log.ip_address|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">
+                            No audit logs found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

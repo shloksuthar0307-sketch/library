@@ -1,0 +1,221 @@
+﻿{% extends 'base.html' %}
+{% block title %}System Settings - SmartLibrary{% endblock %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between pb-4 border-b border-gray-200/40">
+        <div>
+            <h1 class="text-headline-md font-headline-md text-accent">System Settings</h1>
+            <p class="text-sm  text-secondary mt-1">Manage global library preferences, security, and integration configurations.</p>
+        </div>
+        <button class="inline-flex items-center gap-1.5 bg-accent hover:bg-accent-container text-white px-4 py-2 rounded-lg text-sm font-medium shadow-soft transition-all duration-150 active:scale-95">
+            <span class="material-symbols-outlined text-base">save</span>
+            <span>Save Changes</span>
+        </button>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex items-center border-b border-gray-200/30 gap-6">
+        <button onclick="switchTab('general')" id="btn-general" class="tab-btn pb-3 border-b-2 border-primary text-accent font-semibold text-sm flex items-center gap-2 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">tune</span> General
+        </button>
+        <button onclick="switchTab('notifications')" id="btn-notifications" class="tab-btn pb-3 border-b-2 border-transparent text-secondary hover:text-accent text-sm flex items-center gap-2 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">notifications</span> Notifications
+        </button>
+        <button onclick="switchTab('security')" id="btn-security" class="tab-btn pb-3 border-b-2 border-transparent text-secondary hover:text-accent text-sm flex items-center gap-2 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">shield</span> Security
+        </button>
+        <button onclick="switchTab('branches')" id="btn-branches" class="tab-btn pb-3 border-b-2 border-transparent text-secondary hover:text-accent text-sm flex items-center gap-2 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">domain</span> Branches
+        </button>
+    </div>
+
+    <!-- Tab Contents Container -->
+    <div class="relative">
+        
+        <!-- 1. GENERAL TAB CONTENT -->
+        <div id="tab-general" class="tab-content grid grid-cols-1 gap-6">
+            <div class="bg-surface p-6 rounded-2xl border border-gray-200/60 shadow-soft flex flex-col space-y-4">
+                <div>
+                    <h3 class="text-lg-md font-semibold-md text-accent">Institution Profile</h3>
+                    <p class="text-sm  text-secondary">Public-facing details for receipts, emails, and the member portal.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex flex-col space-y-1.5">
+                        <label class="text-xs font-medium text-secondary font-medium">Institution Name</label>
+                        <input type="text" class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base" placeholder="Enter institution name" value="">
+                    </div>
+                    <div class="flex flex-col space-y-1.5">
+                        <label class="text-xs font-medium text-secondary font-medium">Contact Email</label>
+                        <input type="email" class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base" placeholder="e.g., library@university.edu" value="">
+                    </div>
+                    <div class="flex flex-col space-y-1.5 md:col-span-2">
+                        <label class="text-xs font-medium text-secondary font-medium">Physical Address</label>
+                        <textarea class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base resize-none" rows="2" placeholder="Enter physical address"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-surface p-6 rounded-2xl border border-gray-200/60 shadow-soft flex flex-col space-y-4">
+                <div>
+                    <h3 class="text-lg-md font-semibold-md text-accent">Circulation Rules</h3>
+                    <p class="text-sm  text-secondary">Global limits on checkouts, hold durations, and overdue fines.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="flex flex-col space-y-1.5">
+                        <label class="text-xs font-medium text-secondary font-medium">Max Books Per Student</label>
+                        <input type="number" class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base" value="" placeholder="e.g. 5">
+                    </div>
+                    <div class="flex flex-col space-y-1.5">
+                        <label class="text-xs font-medium text-secondary font-medium">Max Books Per Faculty</label>
+                        <input type="number" class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base" value="" placeholder="e.g. 15">
+                    </div>
+                    <div class="flex flex-col space-y-1.5">
+                        <label class="text-xs font-medium text-secondary font-medium">Standard Loan Period (Days)</label>
+                        <input type="number" class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base" value="" placeholder="e.g. 14">
+                    </div>
+                </div>
+                
+                <hr class="border-gray-200/30 my-2">
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm text-accent font-semibold">Enable Automated Late Fines</h4>
+                        <p class="text-sm text-secondary text-[12px]">Automatically apply daily penalty charges to overdue items.</p>
+                    </div>
+                    <div class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm text-accent font-semibold">Allow Patron Self-Renewals</h4>
+                        <p class="text-sm text-secondary text-[12px]">Permit members to extend loans online (if no active holds exist).</p>
+                    </div>
+                    <div class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. NOTIFICATIONS TAB CONTENT -->
+        <div id="tab-notifications" class="tab-content hidden grid grid-cols-1 gap-6">
+            <div class="bg-surface p-6 rounded-2xl border border-gray-200/60 shadow-soft flex flex-col space-y-4">
+                <div>
+                    <h3 class="text-lg-md font-semibold-md text-accent">Notification Preferences</h3>
+                    <p class="text-sm  text-secondary">Configure automated email and SMS triggers for library events.</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-gray-200/30 pb-4">
+                        <div>
+                            <h4 class="text-sm text-accent font-semibold">Overdue Warning Emails</h4>
+                            <p class="text-sm text-secondary text-[12px]">Send automatic alerts 3 days before a book is due.</p>
+                        </div>
+                        <div class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-gray-200/30 pb-4">
+                        <div>
+                            <h4 class="text-sm text-accent font-semibold">Hold Available Alerts</h4>
+                            <p class="text-sm text-secondary text-[12px]">Notify patrons instantly when a reserved book is ready for pickup.</p>
+                        </div>
+                        <div class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. SECURITY TAB CONTENT -->
+        <div id="tab-security" class="tab-content hidden grid grid-cols-1 gap-6">
+            <div class="bg-surface p-6 rounded-2xl border border-gray-200/60 shadow-soft flex flex-col space-y-4">
+                <div>
+                    <h3 class="text-lg-md font-semibold-md text-accent">Security & Access</h3>
+                    <p class="text-sm  text-secondary">Manage login policies and administrative permissions.</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-gray-200/30 pb-4">
+                        <div>
+                            <h4 class="text-sm text-accent font-semibold">Require Two-Factor Authentication (2FA)</h4>
+                            <p class="text-sm text-secondary text-[12px]">Force 2FA for all administrative and librarian roles.</p>
+                        </div>
+                        <div class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer">
+                            <div class="w-11 h-6 bg-surface-variant peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col space-y-1.5 mt-2">
+                        <label class="text-xs font-medium text-secondary font-medium">Session Timeout (Minutes)</label>
+                        <input type="number" class="w-full max-w-xs bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base" value="" placeholder="e.g. 60">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. BRANCHES TAB CONTENT -->
+        <div id="tab-branches" class="tab-content hidden grid grid-cols-1 gap-6">
+            <div class="bg-surface p-6 rounded-2xl border border-gray-200/60 shadow-soft flex flex-col space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg-md font-semibold-md text-accent">Library Branches</h3>
+                        <p class="text-sm  text-secondary">Manage multi-campus facilities and resource routing.</p>
+                    </div>
+                    <button class="inline-flex items-center gap-1 bg-background border border-gray-200 hover:bg-gray-50 text-accent px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150">
+                        <span class="material-symbols-outlined text-[16px]">add</span> Add Branch
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <div class="border border-gray-200/60 rounded-xl p-4 bg-background/50">
+                        <h4 class="font-semibold text-accent">Main Campus Library</h4>
+                        <p class="text-[12px] text-secondary mt-1">Status: Active • Default Routing</p>
+                    </div>
+                    <div class="border border-gray-200/60 rounded-xl p-4 bg-background/50">
+                        <h4 class="font-semibold text-accent">Engineering Annex</h4>
+                        <p class="text-[12px] text-secondary mt-1">Status: Active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- Tab Switching Script -->
+<script>
+    function switchTab(tabId) {
+        // 1. Hide all tab content
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => {
+            content.classList.add('hidden');
+        });
+
+        // 2. Reset all tab buttons to default inactive state
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => {
+            btn.className = 'tab-btn pb-3 border-b-2 border-transparent text-secondary hover:text-accent text-sm flex items-center gap-2 transition-colors';
+        });
+
+        // 3. Show target content
+        const activeContent = document.getElementById('tab-' + tabId);
+        if (activeContent) {
+            activeContent.classList.remove('hidden');
+        }
+
+        // 4. Set target button to active state
+        const activeBtn = document.getElementById('btn-' + tabId);
+        if (activeBtn) {
+            activeBtn.className = 'tab-btn pb-3 border-b-2 border-primary text-accent font-semibold text-sm flex items-center gap-2 transition-colors';
+        }
+    }
+</script>
+{% endblock %}
+

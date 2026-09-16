@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Getting Started - Help Center{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-8">
+    <div class="mb-8">
+        <a href="{% url 'dashboard:help_center' %}" class="text-sm font-semibold leading-6 text-gray-500 hover:text-black flex items-center">
+            <span aria-hidden="true" class="mr-2">&larr;</span> Back to Help Center
+        </a>
+    </div>
+
+    <article class="prose prose-slate max-w-none">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-6">Getting Started with SmartLibrary</h1>
+        
+        <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg p-8 space-y-6">
+            <section>
+                <h2 class="text-2xl font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">Welcome to SmartLibrary</h2>
+                <p class="text-gray-600">
+                    SmartLibrary is your all-in-one platform for managing your library experience. Whether you are a member looking to borrow a book, or an administrator managing thousands of titles across multiple branches, this guide will help you get started.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Setting up your profile</h2>
+                <ol class="list-decimal pl-5 space-y-2 text-gray-600">
+                    <li>Click on your avatar in the top right corner of the dashboard.</li>
+                    <li>Select <strong>My Profile</strong> from the dropdown menu.</li>
+                    <li>Update your personal information, contact details, and preferences.</li>
+                    <li>If you need to change your password, you can do so securely from this page.</li>
+                </ol>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-3">Navigating the Dashboard</h2>
+                <p class="text-gray-600 mb-2">
+                    The sidebar on the left is your main navigation hub. Depending on your role, you will see different options:
+                </p>
+                <ul class="list-disc pl-5 space-y-2 text-gray-600">
+                    <li><strong>Dashboard:</strong> Your personalized home screen with quick stats and recent activity.</li>
+                    <li><strong>Books & Categories:</strong> Browse the library catalog, see what's available, and read summaries.</li>
+                    <li><strong>Reservations:</strong> View and manage books you have put on hold.</li>
+                    <li><strong>Fines:</strong> Check if you have any outstanding balances for overdue items.</li>
+                </ul>
+            </section>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-8">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700">
+                            <strong>Pro Tip:</strong> Use the search bar at the top of the Books page to quickly find titles by author, ISBN, or keywords!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+</div>
+{% endblock %}

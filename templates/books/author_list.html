@@ -1,0 +1,106 @@
+﻿{% extends 'base.html' %}
+{% block title %} Authors - SmartLibrary {% endblock %}
+<!-- Add Author Modal -->
+<div id="addAuthorModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-surface/50 backdrop-blur-sm">
+    <div class="bg-surface rounded-2xl border border-gray-200/60 shadow-xl w-full max-w-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200/40 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-accent">Add New Author</h2>
+            <button onclick="document.getElementById('addAuthorModal').classList.add('hidden')" class="text-secondary hover:text-accent hover:bg-gray-50 p-1 rounded-full transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="space-y-1.5">
+                <label class="text-xs font-medium text-secondary">Author Name</label>
+                <input type="text" placeholder="e.g. Isaac Asimov" class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:ring-2 focus:ring-primary/50 text-base">
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-medium text-secondary">Biography</label>
+                <textarea rows="3" class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:ring-2 focus:ring-primary/50 text-base"></textarea>
+            </div>
+            <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-200/40 mt-4">
+                <button onclick="document.getElementById('addAuthorModal').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-secondary hover:text-accent rounded-lg">Cancel</button>
+                <button onclick="alert('Author saved successfully.'); document.getElementById('addAuthorModal').classList.add('hidden');" class="px-4 py-2 bg-[#0052cc] text-white rounded-lg text-sm font-medium hover:bg-[#0047b3] shadow-soft flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">save</span> Save Author
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="bg-surface p-6 rounded-2xl border border-gray-200/60 shadow-soft flex flex-col">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-200/30">
+        <div>
+            <h3 class="text-headline-sm font-headline-sm text-accent">Authors Directory</h3>
+            <p class="text-sm  text-secondary">Manage author profiles and bibliography.</p>
+        </div>
+        <button class="inline-flex items-center gap-1.5 bg-accent hover:bg-accent-container text-white px-3.5 py-2 rounded-lg text-sm font-medium shadow-soft transition-all duration-150">
+            <span class="material-symbols-outlined text-base">add</span>
+            <span>Add Author</span>
+        </button>
+    </div>
+    <div class="overflow-x-auto -mx-6 px-6 mt-4">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-gray-200/60 text-secondary text-xs font-medium">
+                    <th class="py-3 px-3 w-16">ID</th>
+                    <th class="py-3 px-3">AUTHOR NAME</th>
+                    <th class="py-3 px-3">BIOGRAPHY</th>
+                    <th class="py-3 px-3 text-right">ACTION</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/30 text-base ">
+                {% for author in authors %}
+                <tr class="hover:bg-background/60 transition-colors">
+                    <td class="py-3.5 px-3 font-code text-sm text-secondary">{{ author.id }}</td>
+                    <td class="py-3.5 px-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-bold text-xs uppercase">{{ author.name|make_list|first }}</div>
+                            <span class="font-semibold text-accent">{{ author.name }}</span>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-3 text-secondary truncate max-w-md">{{ author.bio|default:"-" }}</td>
+                    <td class="py-3.5 px-3 text-right">
+                        <button class="p-1 rounded text-secondary hover:text-accent hover:bg-gray-50">
+                            <span class="material-symbols-outlined text-lg">edit</span>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="py-6 text-center text-secondary">No authors found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Add Author Modal -->
+<div id="addAuthorModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-surface/50 backdrop-blur-sm">
+    <div class="bg-surface rounded-2xl border border-gray-200/60 shadow-xl w-full max-w-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200/40 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-accent">Add New Author</h2>
+            <button onclick="document.getElementById('addAuthorModal').classList.add('hidden')" class="text-secondary hover:text-accent hover:bg-gray-50 p-1 rounded-full transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="space-y-1.5">
+                <label class="text-xs font-medium text-secondary">Author Name</label>
+                <input type="text" placeholder="e.g. Isaac Asimov" class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:ring-2 focus:ring-primary/50 text-base">
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-medium text-secondary">Biography</label>
+                <textarea rows="3" class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2 text-accent focus:ring-2 focus:ring-primary/50 text-base"></textarea>
+            </div>
+            <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-200/40 mt-4">
+                <button onclick="document.getElementById('addAuthorModal').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-secondary hover:text-accent rounded-lg">Cancel</button>
+                <button onclick="alert('Author saved successfully.'); document.getElementById('addAuthorModal').classList.add('hidden');" class="px-4 py-2 bg-[#0052cc] text-white rounded-lg text-sm font-medium hover:bg-[#0047b3] shadow-soft flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">save</span> Save Author
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

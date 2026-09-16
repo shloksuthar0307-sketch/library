@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Super Admin Dashboard - LIBRIX{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-primary tracking-tight">Platform Dashboard</h1>
+    <p class="text-secondary mt-1">Overview of the entire multi-tenant platform.</p>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Card 1 -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">domain</span>
+            <span class="text-sm font-medium text-secondary">Total Organizations</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ total_organizations }}</p>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+            <span class="text-sm font-medium text-secondary">Active Orgs</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ active_organizations }}</p>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">warning</span>
+            <span class="text-sm font-medium text-secondary">Suspended Orgs</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ suspended_organizations }}</p>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">payments</span>
+            <span class="text-sm font-medium text-secondary">Platform Revenue</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">${{ platform_revenue }}</p>
+    </div>
+</div>
+
+<!-- Extra KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">group</span>
+            <span class="text-sm font-medium text-secondary">Total Platform Users</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ total_users }}</p>
+    </div>
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">badge</span>
+            <span class="text-sm font-medium text-secondary">Total Members</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ total_members }}</p>
+    </div>
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">book</span>
+            <span class="text-sm font-medium text-secondary">Total Books</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ total_books }}</p>
+    </div>
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">swap_horiz</span>
+            <span class="text-sm font-medium text-secondary">Total Transactions</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ total_transactions }}</p>
+    </div>
+</div>
+
+<!-- Lower Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left: Recent Organizations -->
+    <div class="lg:col-span-2 space-y-4">
+        <h2 class="text-lg font-semibold text-primary">Recent Organizations</h2>
+        
+        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+            <table class="w-full text-left text-sm text-secondary">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3 font-medium text-primary">Name</th>
+                        <th class="px-6 py-3 font-medium text-primary">Type</th>
+                        <th class="px-6 py-3 font-medium text-primary">Status</th>
+                        <th class="px-6 py-3 font-medium text-primary">Created</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for org in recent_organizations %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <a href="{% url 'organizations:detail' org.pk %}" class="font-semibold text-accent hover:underline">{{ org.name }}</a>
+                        </td>
+                        <td class="px-6 py-4">{{ org.get_organization_type_display }}</td>
+                        <td class="px-6 py-4">
+                            {% if org.is_active %}
+                                <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Active</span>
+                            {% else %}
+                                <span class="px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">Suspended</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">{{ org.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center">No organizations found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Right: Subscription Distribution -->
+    <div class="space-y-4">
+        <h2 class="text-lg font-semibold text-primary">Subscription Distribution</h2>
+        
+        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft p-4 space-y-4">
+            {% for dist in subscription_distribution %}
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-primary">{{ dist.plan__name }}</span>
+                <span class="text-sm font-semibold text-accent">{{ dist.total }} orgs</span>
+            </div>
+            {% empty %}
+            <p class="text-sm text-secondary">No subscriptions found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

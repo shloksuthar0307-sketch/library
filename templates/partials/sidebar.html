@@ -1,0 +1,113 @@
+<aside class="w-64 bg-background border-r border-gray-200 flex flex-col h-full flex-shrink-0">
+    <!-- Logo Area -->
+    <div class="h-16 flex items-center px-6 border-b border-gray-200">
+        <a href="{% url 'dashboard:home' %}" class="flex items-center gap-2 text-primary font-bold text-xl tracking-tight">
+            <span class="text-accent text-2xl">📚</span>
+            {% if branding_organization %}{{ branding_organization.name|truncatechars:18 }}{% else %}LIBRIX{% endif %}
+        </a>
+    </div>
+
+    <!-- Main Navigation -->
+    <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+        
+        <a href="{% url 'dashboard:home' %}" class="flex items-center gap-3 px-3 py-2 text-primary bg-surface rounded-lg shadow-soft font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px] text-accent">dashboard</span>
+            Dashboard
+        </a>
+        
+        <a href="{% url 'books:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">auto_stories</span>
+            Books
+        </a>
+        
+        <a href="{% url 'books:categories' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">category</span>
+            Categories
+        </a>
+        
+        {% if request.user.is_staff_member or request.user.is_superuser or request.user.role != 'MEMBER' %}
+        <a href="{% url 'members:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">group</span>
+            Members
+        </a>
+        {% endif %}
+
+        {% if request.user.is_staff_member or request.user.is_superuser or request.user.role != 'MEMBER' %}
+        <div class="pt-4 pb-1">
+            <p class="px-3 text-xs font-semibold text-muted uppercase tracking-wider">Circulation</p>
+        </div>
+        
+        <a href="{% url 'transactions:issue' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">outbox</span>
+            Issue Book
+        </a>
+        
+        <a href="{% url 'transactions:return' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">move_to_inbox</span>
+            Returns
+        </a>
+        {% endif %}
+
+        <a href="{% url 'reservations:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">bookmark</span>
+            Reservations
+        </a>
+
+        <a href="{% url 'transactions:fines' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">payments</span>
+            Fines
+        </a>
+
+        {% if request.user.is_superadmin or request.user.role == 'SUPER_ADMIN' or request.user.role == 'ORG_ADMIN' or request.user.is_superuser %}
+        <div class="pt-4 pb-1">
+            <p class="px-3 text-xs font-semibold text-muted uppercase tracking-wider">Administration</p>
+        </div>
+
+        {% if request.user.is_superadmin %}
+        <a href="{% url 'organizations:platform' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">hub</span>
+            Platform
+        </a>
+        <a href="{% url 'organizations:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">apartment</span>
+            Organizations
+        </a>
+        {% endif %}
+
+        {% if request.user.is_org_admin %}
+        <a href="{% url 'organizations:branches' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">domain</span>
+            Branches
+        </a>
+        {% endif %}
+
+        <a href="{% url 'reports:index' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">bar_chart</span>
+            Reports
+        </a>
+        <a href="{% url 'audit:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">policy</span>
+            Audit Logs
+        </a>
+        {% endif %}
+        
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="p-4 border-t border-gray-200 space-y-1">
+        {% if request.user.is_superadmin or request.user.role == 'SUPER_ADMIN' or request.user.role == 'ORG_ADMIN' or request.user.is_superuser %}
+        <a href="{% url 'dashboard:settings' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">settings</span>
+            Settings
+        </a>
+        {% endif %}
+        <a href="{% url 'dashboard:help_center' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">help</span>
+            Help Center
+        </a>
+        <a href="{% url 'accounts:logout' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-red-600 hover:bg-red-50 rounded-lg font-medium text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">logout</span>
+            Logout
+        </a>
+    </div>
+</aside>

@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if org %}Edit {{ org.name }}{% else %}New Organization{% endif %} - SmartLibrary
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if tenant_mode %}
+                    Organization Profile
+                {% else %}
+                    {% if org %}Edit {{ org.name }}{% else %}New Organization{% endif %}
+                {% endif %}
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">Manage organization details and contact information.</p>
+        </div>
+        {% if not tenant_mode and org %}
+        <div>
+            <a href="{% url 'organizations:detail' org.pk %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors">
+                Cancel
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">
+        <form method="post" enctype="multipart/form-data" class="p-6">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="mb-6 rounded-md bg-red-50 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">There were errors with your submission</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            {{ form.errors }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="space-y-6">
+                <!-- Loop through form fields -->
+                {% for field in form %}
+                    {% if field.name == 'is_active' and tenant_mode %}
+                        {# Hide is_active for org admins #}
+                    {% else %}
+                        <div>
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="mt-2">
+                                {% if field.field.widget.input_type == 'checkbox' %}
+                                    <div class="flex items-center h-6">
+                                        <input type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                               {% if field.value %}checked{% endif %}
+                                               class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black">
+                                    </div>
+                                {% elif field.field.widget.input_type == 'file' %}
+                                    {{ field }}
+                                {% else %}
+                                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                                           name="{{ field.name }}" 
+                                           id="{{ field.id_for_label }}"
+                                           value="{{ field.value|default_if_none:'' }}"
+                                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6">
+                                {% endif %}
+                            </div>
+                            {% if field.help_text %}
+                                <p class="mt-2 text-sm text-gray-500">{{ field.help_text }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="mt-8 pt-5 border-t border-gray-200 flex justify-end space-x-3">
+                {% if tenant_mode %}
+                    <button type="submit" class="inline-flex justify-center rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+                        Save Profile
+                    </button>
+                {% else %}
+                    <button type="submit" class="inline-flex justify-center rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+                        Save Changes
+                    </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - SmartLibrary{% endblock %}
+
+{% block content_auth %}
+<div class="row justify-content-center mt-5 w-full max-w-md">
+    <div class="col-md-12">
+        <div class="bg-surface shadow-soft rounded-xl border border-gray-200/60 overflow-hidden">
+            <div class="bg-accent text-white text-center py-4">
+                <h4 class="mb-0 text-headline-sm font-headline-sm"><i class="material-symbols-outlined align-middle me-2">auto_stories</i> SmartLibrary</h4>
+            </div>
+            <div class="p-6">
+                <h5 class="text-center mb-6 text-headline-sm font-headline-sm text-accent">Sign In</h5>
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="bg-error-container text-on-error-container p-3 rounded text-sm">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div>
+                        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">Username</label>
+                        <input type="text" name="username" class="w-full bg-background border border-gray-200/60 rounded-lg px-3 py-2 text-base text-accent focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="{{ form.username.id_for_label }}" required>
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">Password</label>
+                        <input type="password" name="password" class="w-full bg-background border border-gray-200/60 rounded-lg px-3 py-2 text-base text-accent focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="{{ form.password.id_for_label }}" required>
+                    </div>
+                    
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-accent hover:bg-accent-container text-white py-2.5 rounded-lg text-sm font-medium transition-colors">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

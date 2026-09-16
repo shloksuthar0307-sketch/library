@@ -1,0 +1,158 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Dashboard - LIBRIX{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-primary tracking-tight">Dashboard</h1>
+    <p class="text-secondary mt-1">Welcome back, {{ request.user.first_name|default:"Administrator" }}.</p>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Card 1 -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">auto_stories</span>
+            <span class="text-sm font-medium text-secondary">Total Books</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ total_books }}</p>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">group</span>
+            <span class="text-sm font-medium text-secondary">Active Members</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ total_members }}</p>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">bookmark_added</span>
+            <span class="text-sm font-medium text-secondary">Books Issued</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ books_issued }}</p>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-secondary text-[20px]">warning</span>
+            <span class="text-sm font-medium text-secondary">Overdue Books</span>
+        </div>
+        <p class="text-3xl font-bold text-primary">{{ overdue_books }}</p>
+    </div>
+</div>
+
+{% if branches %}
+<form method="get" class="mb-6">
+    <label class="text-sm text-secondary mr-2">Branch</label>
+    <select name="branch" onchange="this.form.submit()" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+        <option value="">All branches</option>
+        {% for branch in branches %}
+        <option value="{{ branch.pk }}" {% if selected_branch and selected_branch.pk == branch.pk %}selected{% endif %}>{{ branch.name }} ({{ branch.code }})</option>
+        {% endfor %}
+    </select>
+</form>
+{% endif %}
+
+<!-- Activity & Popular Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left: Timeline -->
+    <div class="lg:col-span-2 space-y-4">
+        <h2 class="text-lg font-semibold text-primary">Recent Library Activity</h2>
+        
+        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+            <div class="p-6">
+                <div class="relative border-l border-gray-200 ml-3 space-y-8">
+                    
+                    {% for txn in recent_transactions %}
+                    <div class="relative pl-6">
+                        <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-accent ring-4 ring-white"></span>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-sm text-primary font-medium">📘 <span class="font-semibold">{{ txn.book.title }}</span> issued to {{ txn.member.get_full_name|default:txn.member.username }}</p>
+                                <p class="text-xs text-secondary mt-0.5">{{ txn.issue_date }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="relative pl-6">
+                        <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-gray-300 ring-4 ring-white"></span>
+                        <p class="text-sm text-secondary">No recent activity.</p>
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Dummy static activities for demo visual parity -->
+                    <div class="relative pl-6">
+                        <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-gray-300 ring-4 ring-white"></span>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-sm text-primary font-medium">✅ <span class="font-semibold">The Great Gatsby</span> returned by John Doe</p>
+                                <p class="text-xs text-secondary mt-0.5">2 hours ago</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative pl-6">
+                        <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-gray-300 ring-4 ring-white"></span>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-sm text-primary font-medium">👤 New member <span class="font-semibold">Sarah Jenkins</span> registered</p>
+                                <p class="text-xs text-secondary mt-0.5">5 hours ago</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Popular Books -->
+    <div class="space-y-4">
+        <h2 class="text-lg font-semibold text-primary">Popular Books</h2>
+        
+        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft p-4 space-y-4">
+            
+            <div class="flex gap-4 items-center">
+                <div class="w-12 h-16 bg-gray-100 rounded flex items-center justify-center border border-gray-200">
+                    <span class="material-symbols-outlined text-gray-400">book</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-primary truncate">Atomic Habits</p>
+                    <p class="text-xs text-secondary truncate">James Clear</p>
+                    <p class="text-xs font-medium text-accent mt-1">1,240 Issues</p>
+                </div>
+            </div>
+
+            <div class="flex gap-4 items-center">
+                <div class="w-12 h-16 bg-gray-100 rounded flex items-center justify-center border border-gray-200">
+                    <span class="material-symbols-outlined text-gray-400">book</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-primary truncate">Deep Work</p>
+                    <p class="text-xs text-secondary truncate">Cal Newport</p>
+                    <p class="text-xs font-medium text-accent mt-1">980 Issues</p>
+                </div>
+            </div>
+
+            <div class="flex gap-4 items-center">
+                <div class="w-12 h-16 bg-gray-100 rounded flex items-center justify-center border border-gray-200">
+                    <span class="material-symbols-outlined text-gray-400">book</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-primary truncate">The Design of Everyday Things</p>
+                    <p class="text-xs text-secondary truncate">Don Norman</p>
+                    <p class="text-xs font-medium text-accent mt-1">850 Issues</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

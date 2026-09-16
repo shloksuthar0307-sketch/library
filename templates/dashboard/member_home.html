@@ -1,0 +1,441 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Member Dashboard - {{ branding_organization.name|default:"SmartLibrary" }}{% endblock %}
+
+{% block content %}
+
+<!-- 3. WELCOME SECTION -->
+<div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-primary tracking-tight">Good {% if now.hour < 12 %}morning{% elif now.hour < 18 %}afternoon{% else %}evening{% endif %}, {{ request.user.first_name|default:request.user.username }}</h1>
+        <div class="mt-1 flex items-center gap-3">
+            <p class="text-sm text-secondary">Here's what's happening with your account.</p>
+            <div class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Active
+            </div>
+        </div>
+    </div>
+    
+    <!-- 8. QUICK SEARCH -->
+    <div class="hidden md:block w-64">
+        <form action="{% url 'books:list' %}" method="GET" class="relative">
+            <input type="text" name="q" placeholder="Search books..." class="w-full bg-white border border-gray-200 text-xs px-3 py-1.5 pl-8 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none shadow-soft">
+            <span class="material-symbols-outlined absolute left-2.5 top-1.5 text-gray-400 text-[16px]">search</span>
+        </form>
+    </div>
+</div>
+
+<!-- 4. ACCOUNT SUMMARY CARDS -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Active Loans -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-4 shadow-soft hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                <span class="material-symbols-outlined text-[14px]">menu_book</span>
+            </div>
+            <span class="text-xs font-semibold text-secondary">Active Loans</span>
+        </div>
+        <p class="text-2xl font-bold text-primary mt-1">{{ books_issued }}</p>
+        <p class="text-[11px] text-secondary mt-0.5">{% if due_soon_count %}{{ due_soon_count }} due this week{% else %}No books due soon{% endif %}</p>
+    </div>
+
+    <!-- Due Soon -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-4 shadow-soft hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-6 h-6 rounded-full {% if due_soon_count > 0 %}bg-amber-50 text-amber-600{% else %}bg-gray-50 text-gray-400{% endif %} flex items-center justify-center">
+                <span class="material-symbols-outlined text-[14px]">schedule</span>
+            </div>
+            <span class="text-xs font-semibold text-secondary">Due Soon</span>
+        </div>
+        <p class="text-2xl font-bold {% if due_soon_count > 0 %}text-amber-600{% else %}text-primary{% endif %} mt-1">{{ due_soon_count }}</p>
+        <p class="text-[11px] text-secondary mt-0.5">
+            {% if due_soon_count > 0 %}Next due in 3 days{% else %}All good{% endif %}
+        </p>
+    </div>
+
+    <!-- Reservations -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-4 shadow-soft hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-6 h-6 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <span class="material-symbols-outlined text-[14px]">bookmark</span>
+            </div>
+            <span class="text-xs font-semibold text-secondary">Reservations</span>
+        </div>
+        <p class="text-2xl font-bold text-primary mt-1">{{ reservation_count }}</p>
+        <p class="text-[11px] text-secondary mt-0.5">{% if reservation_count > 0 %}1 ready for pickup{% else %}No active holds{% endif %}</p>
+    </div>
+
+    <!-- Outstanding Fines -->
+    <div class="bg-surface rounded-xl border border-gray-200 p-4 shadow-soft hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-6 h-6 rounded-full {% if pending_fines > 0 %}bg-red-50 text-red-600{% else %}bg-emerald-50 text-emerald-600{% endif %} flex items-center justify-center">
+                <span class="material-symbols-outlined text-[14px]">payments</span>
+            </div>
+            <span class="text-xs font-semibold text-secondary">Outstanding Fines</span>
+        </div>
+        <p class="text-2xl font-bold {% if pending_fines > 0 %}text-red-600{% else %}text-emerald-600{% endif %} mt-1">
+            {{ request.organization.currency|default:"₹" }}{{ pending_fines }}
+        </p>
+        <p class="text-[11px] {% if pending_fines > 0 %}text-red-600 hover:underline cursor-pointer{% else %}text-secondary{% endif %} mt-0.5">
+            {% if pending_fines > 0 %}View Fines{% else %}Cleared Balance{% endif %}
+        </p>
+    </div>
+</div>
+
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- LEFT CONTENT AREA (8 Columns) -->
+    <div class="lg:col-span-8 flex flex-col gap-8">
+        
+        <!-- 6. DUE SOON ALERT -->
+        {% if due_soon_count > 0 %}
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-amber-600 mt-0.5">warning</span>
+                <div>
+                    <h4 class="text-sm font-bold text-amber-900">{{ due_soon_count }} books are due soon</h4>
+                    <p class="text-xs text-amber-800 mt-1">Please renew or return them before the due date to avoid fines.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors whitespace-nowrap">Renew All Eligible</button>
+            </div>
+        </div>
+        {% endif %}
+        {% if digital_loans %}
+        <!-- 9.5 ACTIVE DIGITAL LOANS -->
+        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft overflow-hidden mb-6">
+            <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between bg-purple-50/50">
+                <h2 class="text-lg font-semibold text-primary flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px] text-purple-600">menu_book</span>
+                    Active Digital Loans
+                </h2>
+            </div>
+            <div class="divide-y divide-gray-100">
+                {% for loan in digital_loans %}
+                <div class="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start gap-4">
+                        {% if loan.asset.book.cover_image %}
+                            <img src="{{ loan.asset.book.cover_image.url }}" alt="Cover" class="w-12 h-16 object-cover rounded border border-gray-200 shadow-sm">
+                        {% else %}
+                            <div class="w-12 h-16 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-gray-400">book</span>
+                            </div>
+                        {% endif %}
+                        <div class="flex flex-col">
+                            <h3 class="text-sm font-bold text-primary">{{ loan.asset.book.title }}</h3>
+                            <p class="text-xs text-secondary mt-0.5">{{ loan.asset.book.author.name }}</p>
+                            <div class="flex items-center gap-4 mt-2">
+                                <span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded text-[10px] font-semibold border border-purple-200">{{ loan.asset.format }}</span>
+                                <span class="text-xs font-semibold text-amber-600">Expires: {{ loan.expires_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <a href="{% url 'books:serve_digital_asset' loan.access_token %}" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors text-center w-full sm:w-auto flex items-center justify-center gap-1">
+                            <span class="material-symbols-outlined text-[16px]">file_open</span> Read Now
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 5. MY CURRENT LOANS -->
+        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
+                <h2 class="text-lg font-semibold text-primary">My Current Loans</h2>
+                <a href="#" class="text-sm font-semibold text-accent hover:underline">View History</a>
+            </div>
+            
+            {% if active_loans %}
+            <div class="divide-y divide-gray-100">
+                {% for txn in active_loans %}
+                <div class="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start gap-4">
+                        {% if txn.book.cover_image %}
+                            <img src="{{ txn.book.cover_image.url }}" alt="Cover" class="w-12 h-16 object-cover rounded border border-gray-200 shadow-sm">
+                        {% else %}
+                            <div class="w-12 h-16 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-gray-400">book</span>
+                            </div>
+                        {% endif %}
+                        <div class="flex flex-col">
+                            <h3 class="text-sm font-bold text-primary">{{ txn.book.title }}</h3>
+                            <p class="text-xs text-secondary mt-0.5">{{ txn.book.author }}</p>
+                            <div class="flex items-center gap-4 mt-2">
+                                <span class="text-xs text-secondary">Borrowed: {{ txn.issue_date }}</span>
+                                <span class="text-xs font-semibold {% if txn.status == 'OVERDUE' %}text-red-600{% else %}text-primary{% endif %}">Due: {{ txn.due_date }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-2 w-full sm:w-auto">
+                        {% if txn.status == 'OVERDUE' %}
+                            <span class="inline-flex items-center gap-1 bg-red-50 text-red-700 text-xs font-semibold px-2 py-0.5 rounded border border-red-200 w-fit">Overdue</span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded border border-blue-200 w-fit">Due in 6 days</span>
+                        {% endif %}
+                        <div class="flex gap-2 w-full justify-end mt-1">
+                            <button class="bg-surface border border-gray-200 hover:bg-gray-50 text-accent text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors flex-1 sm:flex-none">Renew</button>
+                            <button class="bg-surface border border-gray-200 hover:bg-gray-50 text-primary text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors flex-1 sm:flex-none">Details</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- 18. EMPTY STATES -->
+            <div class="py-6 px-4 text-center flex flex-col items-center justify-center">
+                <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center mb-2">
+                    <span class="material-symbols-outlined text-gray-400 text-xl">auto_stories</span>
+                </div>
+                <h3 class="text-sm font-semibold text-primary">No active loans</h3>
+                <p class="text-xs text-secondary mt-1">You don't currently have any borrowed books.</p>
+                <a href="{% url 'books:list' %}" class="mt-3 bg-accent hover:bg-black text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors inline-block">Discover Books</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 9. ACTIVE RESERVATIONS -->
+        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+            <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
+                <h2 class="text-base font-semibold text-primary">My Reservations</h2>
+            </div>
+            {% if active_reservations %}
+            <div class="divide-y divide-gray-100">
+                {% for res in active_reservations %}
+                <div class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start gap-4">
+                        <div class="w-8 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-gray-400 text-lg">book</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <h3 class="text-sm font-bold text-primary">{{ res.book.title }}</h3>
+                            <p class="text-xs text-secondary mt-0.5">{{ res.book.author }}</p>
+                            <span class="text-[11px] text-secondary mt-1">Reserved on {{ res.reservation_date }}</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-1.5">
+                        <span class="inline-flex items-center gap-1 bg-cyan-50 text-cyan-800 text-[11px] font-semibold px-2 py-0.5 rounded border border-cyan-200">
+                            {% if forloop.first %}Ready for Pickup{% else %}Position #{{ forloop.counter }}{% endif %}
+                        </span>
+                        <button class="text-[11px] font-semibold text-accent hover:underline">View Reservation</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="py-6 px-4 text-center flex flex-col items-center justify-center">
+                <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center mb-2">
+                    <span class="material-symbols-outlined text-gray-400 text-xl">bookmark</span>
+                </div>
+                <h3 class="text-sm font-semibold text-primary">No reservations</h3>
+                <p class="text-xs text-secondary mt-1">You have no active book holds.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 7. DISCOVER BOOKS (RECOMMENDED) -->
+        <div>
+            <h2 class="text-lg font-semibold text-primary mb-4">Recommended For You</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {% for book in recommended_books %}
+                <div class="bg-surface border border-gray-200 rounded-xl p-3 shadow-soft hover:shadow-md transition-all flex flex-col h-full relative group">
+                    <button class="absolute top-2 right-2 w-7 h-7 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span class="material-symbols-outlined text-[16px]">favorite</span>
+                    </button>
+                    
+                    <div class="w-full aspect-[2/3] bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center mb-3 overflow-hidden">
+                        {% if book.cover_image %}
+                            <img src="{{ book.cover_image.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <span class="material-symbols-outlined text-gray-400 text-3xl">menu_book</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 flex flex-col">
+                        <h3 class="text-sm font-bold text-primary line-clamp-2 leading-tight" title="{{ book.title }}">{{ book.title }}</h3>
+                        <p class="text-xs text-secondary mt-1 truncate">{{ book.author }}</p>
+                        <div class="mt-auto pt-3">
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Available</span>
+                            <div class="flex gap-2 mt-2">
+                                <a href="{% url 'books:detail' book.pk %}" class="flex-1 text-center bg-surface border border-gray-200 hover:bg-gray-50 text-accent text-xs font-semibold py-1.5 rounded-lg transition-colors">View</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- 10. READING ACTIVITY -->
+        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
+                <h2 class="text-lg font-semibold text-primary">Reading Activity (This Month)</h2>
+            </div>
+            <div class="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="flex flex-col items-center justify-center p-3 border border-gray-100 rounded-lg bg-gray-50/50">
+                    <span class="text-2xl font-bold text-primary">{{ activity_stats.borrowed_month }}</span>
+                    <span class="text-xs text-secondary font-medium uppercase tracking-wide mt-1">Borrowed</span>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 border border-gray-100 rounded-lg bg-gray-50/50">
+                    <span class="text-2xl font-bold text-primary">{{ activity_stats.returned_month }}</span>
+                    <span class="text-xs text-secondary font-medium uppercase tracking-wide mt-1">Returned</span>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 border border-gray-100 rounded-lg bg-gray-50/50">
+                    <span class="text-2xl font-bold text-primary">{{ activity_stats.renewals }}</span>
+                    <span class="text-xs text-secondary font-medium uppercase tracking-wide mt-1">Renewals</span>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 border border-gray-100 rounded-lg bg-gray-50/50">
+                    <span class="text-2xl font-bold text-primary">{{ activity_stats.reservations }}</span>
+                    <span class="text-xs text-secondary font-medium uppercase tracking-wide mt-1">Reserved</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT CONTENT AREA (4 Columns) -->
+    <div class="lg:col-span-4 flex flex-col gap-6">
+        
+        <!-- 16 & 17. MEMBER PROFILE SNAPSHOT & BORROWING LIMIT -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft p-5">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-14 h-14 rounded-full bg-accent text-white flex items-center justify-center text-xl font-bold uppercase shadow-sm">
+                    {{ request.user.first_name|first|default:request.user.username|first }}
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-primary">{{ request.user.get_full_name|default:request.user.username }}</h3>
+                    <p class="text-xs text-secondary font-code mt-0.5">Member ID: {{ request.user.member_profile.member_id|default:"LIB-NEW-123" }}</p>
+                    <p class="text-xs text-emerald-600 font-semibold mt-1">Active until: 31 Dec 2026</p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-100 pt-4 mt-2">
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-secondary font-semibold">Borrowing Limit</span>
+                    <span class="text-primary font-bold">{{ books_issued }} / {{ request.user.member_profile.max_book_limit|default:"8" }}</span>
+                </div>
+                <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div class="bg-accent h-full rounded-full" style="width: 50%"></div>
+                </div>
+                <p class="text-xs text-secondary mt-1.5 text-right">4 borrowing slots available</p>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <a href="{% url 'accounts:profile' %}" class="block w-full text-center bg-gray-50 hover:bg-gray-100 border border-gray-200 text-accent text-sm font-semibold py-2 rounded-lg transition-colors">View Profile</a>
+            </div>
+        </div>
+        
+        <!-- 14. NOTIFICATIONS -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
+            <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-primary">Recent Notifications</h3>
+                <a href="#" class="text-xs font-semibold text-accent hover:underline">View All</a>
+            </div>
+            <div class="divide-y divide-gray-100">
+                <!-- Mock notification -->
+                <div class="p-4 hover:bg-gray-50 transition-colors flex items-start gap-3">
+                    <div class="mt-0.5 text-amber-500"><span class="material-symbols-outlined text-[18px]">schedule</span></div>
+                    <div>
+                        <p class="text-sm text-primary font-medium leading-tight">Book "Clean Code" is due in 2 days.</p>
+                        <p class="text-xs text-secondary mt-1">2 hours ago</p>
+                    </div>
+                </div>
+                <div class="p-4 hover:bg-gray-50 transition-colors flex items-start gap-3">
+                    <div class="mt-0.5 text-emerald-500"><span class="material-symbols-outlined text-[18px]">inventory_2</span></div>
+                    <div>
+                        <p class="text-sm text-primary font-medium leading-tight">Your reservation for "Design Patterns" is ready for pickup.</p>
+                        <p class="text-xs text-secondary mt-1">1 day ago</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13. FINES & ACCOUNT BALANCE (Small Widget) -->
+        {% if pending_fines > 0 %}
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft p-5">
+            <h3 class="text-sm font-bold text-primary mb-3">Outstanding Balance</h3>
+            <p class="text-2xl font-bold text-red-600 mb-2">{{ request.organization.currency|default:"₹" }}{{ pending_fines }}</p>
+            <div class="text-xs text-secondary space-y-1 mb-4">
+                <div class="flex justify-between"><span>Late return:</span> <span class="font-semibold text-primary">₹100</span></div>
+                <div class="flex justify-between"><span>Lost/damaged item:</span> <span class="font-semibold text-primary">₹140</span></div>
+            </div>
+            <div class="flex gap-2">
+                <button class="flex-1 bg-black hover:bg-gray-800 text-white text-xs font-semibold py-2 rounded-lg transition-colors">Pay Fine</button>
+                <button class="flex-1 bg-surface border border-gray-200 hover:bg-gray-50 text-primary text-xs font-semibold py-2 rounded-lg transition-colors">Details</button>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 12. SAVED BOOKS -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold text-primary">Saved Books</h3>
+            </div>
+            <div class="space-y-3">
+                {% for book in saved_books %}
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-10 bg-gray-100 rounded flex-shrink-0">
+                        {% if book.cover_image %}
+                            <img src="{{ book.cover_image.url }}" class="w-full h-full object-cover rounded">
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-primary truncate">{{ book.title }}</p>
+                        <p class="text-xs text-secondary truncate">{{ book.author }}</p>
+                    </div>
+                    <button class="text-accent text-xs font-semibold hover:underline">Reserve</button>
+                </div>
+                {% empty %}
+                <div class="text-center py-2">
+                    <p class="text-xs text-secondary">You haven't saved any books yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 11. RECENTLY VIEWED -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft p-5">
+            <h3 class="text-sm font-bold text-primary mb-4">Recently Viewed</h3>
+            <div class="space-y-3">
+                {% for book in recently_viewed %}
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-10 bg-gray-100 rounded flex-shrink-0">
+                        {% if book.cover_image %}
+                            <img src="{{ book.cover_image.url }}" class="w-full h-full object-cover rounded">
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-primary truncate">{{ book.title }}</p>
+                        <p class="text-xs text-secondary truncate">Available</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 15. LIBRARY ANNOUNCEMENTS -->
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 shadow-inner">
+            <h3 class="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px] text-accent">campaign</span>
+                Library Updates
+            </h3>
+            <div class="space-y-3">
+                {% for ann in announcements %}
+                <div class="text-sm">
+                    <span class="text-xs font-semibold text-accent block mb-0.5">{{ ann.date }}</span>
+                    <p class="text-primary font-medium leading-tight">{{ ann.title }}</p>
+                    <p class="text-xs text-secondary mt-0.5">{{ ann.message }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

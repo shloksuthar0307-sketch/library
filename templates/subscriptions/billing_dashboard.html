@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Billing & Subscription - SmartLibrary{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex justify-between items-end">
+    <div>
+        <h1 class="text-3xl font-bold text-primary tracking-tight">Billing & Subscription</h1>
+        <p class="text-secondary mt-1">Manage your organization's subscription plan and view usage.</p>
+    </div>
+</div>
+
+{% if messages %}
+<div class="mb-6">
+    {% for message in messages %}
+    <div class="p-4 rounded-xl text-sm font-medium {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- LEFT: Current Plan & Usage -->
+    <div class="lg:col-span-2 space-y-8">
+        
+        <!-- Current Plan Overview -->
+        <div class="bg-surface border border-gray-200 rounded-2xl p-6 shadow-soft">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-lg font-semibold text-primary">Current Plan</h2>
+                    <p class="text-secondary text-sm">You are currently on the <strong class="text-primary">{{ subscription.plan.name }}</strong> plan.</p>
+                </div>
+                <div class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold uppercase tracking-wide">
+                    {{ subscription.get_status_display }}
+                </div>
+            </div>
+            
+            <div class="flex items-end gap-2 mb-6">
+                <span class="text-4xl font-extrabold text-primary">${{ subscription.plan.monthly_price }}</span>
+                <span class="text-secondary mb-1">/ month</span>
+            </div>
+            
+            <p class="text-sm text-secondary border-t border-gray-100 pt-4">
+                Your subscription started on <strong>{{ subscription.started_at|date:"M d, Y" }}</strong>.
+            </p>
+        </div>
+
+        <!-- Usage Stats -->
+        <div class="bg-surface border border-gray-200 rounded-2xl p-6 shadow-soft">
+            <h2 class="text-lg font-semibold text-primary mb-6">Resource Usage</h2>
+            
+            <div class="space-y-6">
+                <!-- Members -->
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="font-medium text-primary">Members</span>
+                        <span class="text-secondary">{{ usage.members.count }} / {% if usage.members.limit %}{{ usage.members.limit }}{% else %}Unlimited{% endif %}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-accent h-2 rounded-full" style="width: {{ usage.members.percent }}%"></div>
+                    </div>
+                </div>
+
+                <!-- Books -->
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="font-medium text-primary">Books</span>
+                        <span class="text-secondary">{{ usage.books.count }} / {% if usage.books.limit %}{{ usage.books.limit }}{% else %}Unlimited{% endif %}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full" style="width: {{ usage.books.percent }}%"></div>
+                    </div>
+                </div>
+
+                <!-- Staff -->
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="font-medium text-primary">Staff Accounts</span>
+                        <span class="text-secondary">{{ usage.staff.count }} / {% if usage.staff.limit %}{{ usage.staff.limit }}{% else %}Unlimited{% endif %}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-purple-500 h-2 rounded-full" style="width: {{ usage.staff.percent }}%"></div>
+                    </div>
+                </div>
+                
+                <!-- Branches -->
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="font-medium text-primary">Branches</span>
+                        <span class="text-secondary">{{ usage.branches.count }} / {% if usage.branches.limit %}{{ usage.branches.limit }}{% else %}Unlimited{% endif %}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-orange-500 h-2 rounded-full" style="width: {{ usage.branches.percent }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT: Available Plans -->
+    <div class="lg:col-span-1 space-y-6">
+        <h2 class="text-lg font-semibold text-primary">Available Plans</h2>
+        
+        {% for plan in plans %}
+        <div class="bg-surface border {% if subscription.plan.id == plan.id %}border-accent ring-1 ring-accent{% else %}border-gray-200{% endif %} rounded-2xl p-5 shadow-soft relative">
+            {% if subscription.plan.id == plan.id %}
+            <div class="absolute -top-3 right-4 bg-accent text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                Current
+            </div>
+            {% endif %}
+            
+            <h3 class="font-semibold text-primary text-lg">{{ plan.name }}</h3>
+            <div class="mt-2 mb-4">
+                <span class="text-2xl font-bold text-primary">${{ plan.monthly_price }}</span>
+                <span class="text-sm text-secondary">/mo</span>
+            </div>
+            
+            <ul class="space-y-2 text-sm text-secondary mb-6">
+                <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-accent">check</span> {% if plan.max_members %}{{ plan.max_members }}{% else %}Unlimited{% endif %} Members</li>
+                <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-accent">check</span> {% if plan.max_books %}{{ plan.max_books }}{% else %}Unlimited{% endif %} Books</li>
+                <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-accent">check</span> {% if plan.max_staff %}{{ plan.max_staff }}{% else %}Unlimited{% endif %} Staff</li>
+            </ul>
+            
+            {% if subscription.plan.id != plan.id %}
+            <form method="POST" action="{% url 'subscriptions:change_plan' %}">
+                {% csrf_token %}
+                <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                <button type="submit" class="w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors {% if plan.monthly_price > subscription.plan.monthly_price %}bg-accent text-white hover:bg-accent-hover{% else %}bg-gray-100 text-primary hover:bg-gray-200{% endif %}">
+                    {% if plan.monthly_price > subscription.plan.monthly_price %}Upgrade to {{ plan.name }}{% else %}Downgrade{% endif %}
+                </button>
+            </form>
+            {% else %}
+            <button disabled class="w-full py-2.5 px-4 rounded-lg text-sm font-medium bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed">
+                Active Plan
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+    </div>
+
+</div>
+{% endblock %}

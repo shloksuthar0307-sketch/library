@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Help Center - SmartLibrary{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8 py-8">
+    <!-- Header -->
+    <div class="text-center">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">How can we help you today?</h1>
+        <p class="mt-4 text-lg leading-8 text-gray-600">Search our knowledge base or browse categories below to find answers.</p>
+        
+        <div class="mt-6 max-w-xl mx-auto">
+            <div class="relative rounded-md shadow-sm">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <input type="text" name="search" id="search" class="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6" placeholder="Search for articles, guides, or FAQs...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links Grid -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Getting Started -->
+        <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-black text-white mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                </svg>
+            </div>
+            <h3 class="text-base font-semibold leading-7 text-gray-900">Getting Started</h3>
+            <p class="mt-2 text-sm leading-6 text-gray-600">Learn the basics of SmartLibrary, how to set up your profile, and navigate the platform.</p>
+            <a href="{% url 'dashboard:guide_getting_started' %}" class="mt-4 inline-flex items-center text-sm font-semibold text-black hover:text-gray-700">Read guides <span aria-hidden="true">&rarr;</span></a>
+        </div>
+
+        <!-- Circulation -->
+        <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-black text-white mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                </svg>
+            </div>
+            <h3 class="text-base font-semibold leading-7 text-gray-900">Borrowing & Returns</h3>
+            <p class="mt-2 text-sm leading-6 text-gray-600">Everything you need to know about issuing books, returns, renewals, and holds.</p>
+            <a href="{% url 'dashboard:guide_borrowing_returns' %}" class="mt-4 inline-flex items-center text-sm font-semibold text-black hover:text-gray-700">Read guides <span aria-hidden="true">&rarr;</span></a>
+        </div>
+
+        <!-- Fines & Payments -->
+        <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-black text-white mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h3 class="text-base font-semibold leading-7 text-gray-900">Fines & Policies</h3>
+            <p class="mt-2 text-sm leading-6 text-gray-600">Information about late fines, lost book policies, and how to settle outstanding balances.</p>
+            <a href="{% url 'dashboard:guide_fines_policies' %}" class="mt-4 inline-flex items-center text-sm font-semibold text-black hover:text-gray-700">Read guides <span aria-hidden="true">&rarr;</span></a>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="mt-16">
+        <h2 class="text-2xl font-bold leading-10 tracking-tight text-gray-900">Frequently Asked Questions</h2>
+        <dl class="mt-6 space-y-6 divide-y divide-gray-200">
+            <div class="pt-6">
+                <dt>
+                    <button type="button" class="flex w-full items-start justify-between text-left text-gray-900" aria-controls="faq-0" aria-expanded="false">
+                        <span class="text-base font-semibold leading-7">How many books can I borrow at once?</span>
+                    </button>
+                </dt>
+                <dd class="mt-2 pr-12" id="faq-0">
+                    <p class="text-base leading-7 text-gray-600">Your borrowing limit depends on your organization's settings. Usually, a standard member can borrow up to {{ request.organization.settings.max_books_per_member|default:"3" }} books simultaneously.</p>
+                </dd>
+            </div>
+            <div class="pt-6">
+                <dt>
+                    <button type="button" class="flex w-full items-start justify-between text-left text-gray-900" aria-controls="faq-1" aria-expanded="false">
+                        <span class="text-base font-semibold leading-7">How do I renew a book?</span>
+                    </button>
+                </dt>
+                <dd class="mt-2 pr-12" id="faq-1">
+                    <p class="text-base leading-7 text-gray-600">If your library allows self-renewal, you can go to your active reservations and click "Renew". Alternatively, you can speak to a staff member at the desk.</p>
+                </dd>
+            </div>
+            <div class="pt-6">
+                <dt>
+                    <button type="button" class="flex w-full items-start justify-between text-left text-gray-900" aria-controls="faq-2" aria-expanded="false">
+                        <span class="text-base font-semibold leading-7">What happens if I lose a book?</span>
+                    </button>
+                </dt>
+                <dd class="mt-2 pr-12" id="faq-2">
+                    <p class="text-base leading-7 text-gray-600">Please report lost books to a staff member immediately to stop overdue fines from accumulating. You will typically be responsible for the replacement cost of the book.</p>
+                </dd>
+            </div>
+            <div class="pt-6">
+                <dt>
+                    <button type="button" class="flex w-full items-start justify-between text-left text-gray-900" aria-controls="faq-3" aria-expanded="false">
+                        <span class="text-base font-semibold leading-7">Can I access books from other branches?</span>
+                    </button>
+                </dt>
+                <dd class="mt-2 pr-12" id="faq-3">
+                    <p class="text-base leading-7 text-gray-600">Yes, as a member of this organization, you can borrow books from any branch, provided the item is not restricted to in-library use only.</p>
+                </dd>
+            </div>
+        </dl>
+    </div>
+
+    <!-- Contact Support -->
+    <div class="mt-16 rounded-2xl bg-gray-50 px-6 py-10 sm:p-12 text-center">
+        <h3 class="text-lg font-semibold leading-8 tracking-tight text-gray-900">Still need help?</h3>
+        <p class="mx-auto mt-4 max-w-2xl text-base leading-7 text-gray-600">If you couldn't find the answer to your question, our staff is ready to assist you.</p>
+        <div class="mt-6 flex justify-center gap-x-6">
+            <a href="mailto:{{ request.organization.email|default:'support@smartlibrary.com' }}" class="text-sm font-semibold leading-6 text-gray-900">
+                <span aria-hidden="true">&rarr;</span> Email Support
+            </a>
+            {% if request.organization.phone %}
+            <a href="tel:{{ request.organization.phone }}" class="text-sm font-semibold leading-6 text-gray-900">
+                <span aria-hidden="true">&rarr;</span> Call {{ request.organization.phone }}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

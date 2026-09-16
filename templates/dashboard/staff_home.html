@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Circulation Desk - {{ branding_organization.name|default:"SmartLibrary" }}{% endblock %}
+
+{% block content %}
+
+<!-- Header & Branch Context -->
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-primary tracking-tight">Circulation Desk</h1>
+        <p class="text-secondary mt-1">Manage today's library operations and member requests.</p>
+    </div>
+    
+    <div class="flex items-center gap-4">
+        <!-- Branch Context Selector -->
+        {% if request.user.can_access_all_branches and branches %}
+        <form method="get" class="flex items-center gap-2 bg-surface border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm">
+            <span class="material-symbols-outlined text-secondary text-[20px]">domain</span>
+            <select name="branch" onchange="this.form.submit()" class="bg-transparent border-none text-sm font-semibold text-primary focus:ring-0 cursor-pointer pr-6">
+                <option value="">All Authorized Branches</option>
+                {% for b in branches %}
+                <option value="{{ b.pk }}" {% if selected_branch and selected_branch.pk == b.pk %}selected{% endif %}>{{ b.name }} ({{ b.code }})</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% else %}
+        <div class="flex items-center gap-2 bg-surface border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
+            <span class="material-symbols-outlined text-secondary text-[20px]">domain</span>
+            <span class="text-sm font-semibold text-primary">Branch: {{ request.user.branch.name|default:"Primary" }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions Row -->
+<div class="mb-8">
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'transactions:issue' %}" class="bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">outbox</span> Issue Book
+        </a>
+        <a href="{% url 'transactions:return' %}" class="bg-surface hover:bg-gray-50 border border-gray-200 text-primary px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">move_to_inbox</span> Return Book
+        </a>
+        <a href="{% url 'members:list' %}" class="bg-surface hover:bg-gray-50 border border-gray-200 text-primary px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">person_search</span> Find Member
+        </a>
+        <a href="{% url 'books:list' %}" class="bg-surface hover:bg-gray-50 border border-gray-200 text-primary px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">search</span> Find Book
+        </a>
+        <a href="{% url 'reservations:list' %}" class="bg-surface hover:bg-gray-50 border border-gray-200 text-primary px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">bookmark_manager</span> Process Reservation
+        </a>
+        <a href="{% url 'transactions:fines' %}" class="bg-surface hover:bg-gray-50 border border-gray-200 text-primary px-4 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">payments</span> Collect Fine
+        </a>
+    </div>
+</div>
+
+<!-- Today's KPI Cards -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+    <div class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft">
+        <p class="text-xs font-semibold text-secondary uppercase tracking-wide">Issued Today</p>
+        <p class="text-2xl font-bold text-primary mt-1">{{ today_stats.issued }}</p>
+    </div>
+    <div class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft">
+        <p class="text-xs font-semibold text-secondary uppercase tracking-wide">Returned</p>
+        <p class="text-2xl font-bold text-primary mt-1">{{ today_stats.returned }}</p>
+    </div>
+    <div class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft">
+        <p class="text-xs font-semibold text-secondary uppercase tracking-wide">Renewals</p>
+        <p class="text-2xl font-bold text-primary mt-1">{{ today_stats.renewals }}</p>
+    </div>
+    <div class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft">
+        <p class="text-xs font-semibold text-secondary uppercase tracking-wide">Reservations</p>
+        <p class="text-2xl font-bold text-primary mt-1">{{ today_stats.reservations }}</p>
+    </div>
+    <div class="bg-surface border border-emerald-200 rounded-xl p-4 shadow-soft bg-emerald-50/30">
+        <p class="text-xs font-semibold text-emerald-800 uppercase tracking-wide">Fines Collected</p>
+        <p class="text-2xl font-bold text-emerald-700 mt-1">{{ request.organization.currency|default:"₹" }}{{ today_stats.fines }}</p>
+    </div>
+    <div class="bg-surface border border-red-200 rounded-xl p-4 shadow-soft bg-red-50/30">
+        <p class="text-xs font-semibold text-red-800 uppercase tracking-wide">Overdue</p>
+        <p class="text-2xl font-bold text-red-700 mt-1">{{ today_stats.overdue }}</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- LEFT CONTENT AREA -->
+    <div class="lg:col-span-2 space-y-8">
+        
+        <!-- Attention Required -->
+        {% if overdue_transactions %}
+        <div class="bg-surface border border-red-200 rounded-xl shadow-soft overflow-hidden">
+            <div class="px-5 py-4 border-b border-red-100 bg-red-50 flex items-center justify-between">
+                <h2 class="text-sm font-bold text-red-800 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">error</span> Attention Required (Overdue)
+                </h2>
+                <a href="{% url 'transactions:fines' %}" class="text-xs font-semibold text-red-700 hover:underline">View All</a>
+            </div>
+            <div class="divide-y divide-gray-100">
+                {% for txn in overdue_transactions %}
+                <div class="p-4 hover:bg-gray-50 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-primary">{{ txn.book.title }}</p>
+                        <p class="text-xs text-secondary mt-0.5">Borrowed by: {{ txn.member.get_full_name|default:txn.member.username }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-flex items-center gap-1 bg-red-50 text-red-700 text-xs font-semibold px-2 py-0.5 rounded border border-red-200">
+                            Due: {{ txn.due_date }}
+                        </span>
+                        <div class="mt-1">
+                            <a href="#" class="text-xs font-medium text-accent hover:underline">Contact Member</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Activity Table -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
+                <h2 class="text-lg font-semibold text-primary">Recent Operations</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-background border-b border-gray-200 text-xs font-semibold text-muted uppercase tracking-wider">
+                            <th class="py-3 px-4">Action</th>
+                            <th class="py-3 px-4">Details</th>
+                            <th class="py-3 px-4">Member</th>
+                            <th class="py-3 px-4 text-right">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-sm">
+                        {% for txn in recent_transactions %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-4">
+                                {% if txn.status == 'ISSUED' %}
+                                    <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded border border-blue-200">
+                                        <span class="material-symbols-outlined text-[14px]">outbox</span> Issued
+                                    </span>
+                                {% elif txn.status == 'RETURNED' %}
+                                    <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded border border-emerald-200">
+                                        <span class="material-symbols-outlined text-[14px]">move_to_inbox</span> Returned
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded border border-gray-200">
+                                        {{ txn.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 font-medium text-primary">{{ txn.book.title }}</td>
+                            <td class="py-3 px-4 text-secondary">{{ txn.member.get_full_name|default:txn.member.username }}</td>
+                            <td class="py-3 px-4 text-right text-xs text-secondary font-mono">{{ txn.issue_date }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-secondary">
+                                No recent transactions today.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT CONTENT AREA -->
+    <div class="lg:col-span-1 space-y-8">
+        
+        <!-- Global Search -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft p-5">
+            <h3 class="text-sm font-bold text-primary mb-3">Global Lookup</h3>
+            <form action="{% url 'books:list' %}" method="GET" class="relative">
+                <input type="text" name="q" placeholder="Member ID, Barcode, ISBN..." class="w-full bg-background border border-gray-200 text-sm px-4 py-2 pl-9 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none shadow-sm">
+                <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-gray-400 text-[18px]">search</span>
+            </form>
+        </div>
+
+        <!-- Branch Inventory Snippet -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
+            <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-primary">Branch Inventory</h3>
+                <a href="{% url 'books:list' %}" class="text-xs font-semibold text-accent hover:underline">View All</a>
+            </div>
+            <div class="p-5">
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-secondary">Total Titles</span>
+                    <span class="font-bold text-primary">{{ total_books }}</span>
+                </div>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-secondary">Currently Issued</span>
+                    <span class="font-bold text-primary">{{ books_issued }}</span>
+                </div>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-secondary">Active Reservations</span>
+                    <span class="font-bold text-primary">{{ reservation_count }}</span>
+                </div>
+                
+                <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden mt-4">
+                    <div class="bg-accent h-full rounded-full" style="width: 60%"></div>
+                </div>
+                <p class="text-xs text-secondary mt-2 text-right">Estimated 60% circulation rate</p>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="bg-surface border border-gray-200 rounded-xl shadow-soft p-5">
+            <h3 class="text-sm font-bold text-primary mb-3">Staff Notifications</h3>
+            <div class="space-y-3">
+                <div class="flex items-start gap-2 text-sm">
+                    <span class="material-symbols-outlined text-accent text-[18px] mt-0.5">info</span>
+                    <div>
+                        <p class="font-medium text-primary">Server maintenance tonight</p>
+                        <p class="text-xs text-secondary">System will be offline at 2AM.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

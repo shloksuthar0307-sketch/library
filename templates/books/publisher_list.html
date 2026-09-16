@@ -1,0 +1,44 @@
+﻿{% extends 'base.html' %}
+{% block title %}Publishers - SmartLibrary{% endblock %}
+{% block content %}
+<section class="bg-surface p-6 rounded-2xl border border-gray-200/60 shadow-soft flex flex-col">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-200/30">
+        <div>
+            <h3 class="text-headline-sm font-headline-sm text-accent">Publishers</h3>
+            <p class="text-sm  text-secondary">Manage publishing houses.</p>
+        </div>
+        <button class="inline-flex items-center gap-1.5 bg-accent hover:bg-accent-container text-white px-3.5 py-2 rounded-lg text-sm font-medium shadow-soft transition-all duration-150">
+            <span class="material-symbols-outlined text-base">add</span>
+            <span>Add Publisher</span>
+        </button>
+    </div>
+    <div class="overflow-x-auto -mx-6 px-6 mt-4">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-gray-200/60 text-secondary text-xs font-medium">
+                    <th class="py-3 px-3 w-16">ID</th>
+                    <th class="py-3 px-3">PUBLISHER NAME</th>
+                    <th class="py-3 px-3">WEBSITE</th>
+                    <th class="py-3 px-3 text-right">ACTION</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/30 text-base ">
+                {% for publisher in publishers %}
+                <tr class="hover:bg-background/60 transition-colors">
+                    <td class="py-3.5 px-3 font-code text-sm text-secondary">{{ publisher.id }}</td>
+                    <td class="py-3.5 px-3 font-semibold text-accent">{{ publisher.name }}</td>
+                    <td class="py-3.5 px-3 text-secondary truncate max-w-md">{{ publisher.website|default:"-" }}</td>
+                    <td class="py-3.5 px-3 text-right">
+                        <button class="p-1 rounded text-secondary hover:text-accent hover:bg-gray-50">
+                            <span class="material-symbols-outlined text-lg">edit</span>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="py-6 text-center text-secondary">No publishers found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

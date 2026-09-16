@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Bulk Issue - SmartLibrary{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-6">
+    <div class="bg-surface rounded-2xl border border-gray-200 p-8 shadow-soft text-center space-y-6">
+        <span class="material-symbols-outlined text-6xl text-primary">layers</span>
+        <h1 class="text-3xl font-bold text-accent tracking-tight">Bulk Issue Desk (Coming Soon)</h1>
+        <p class="text-lg text-secondary max-w-2xl mx-auto">
+            The Bulk Issue module is currently under development. Soon you'll be able to scan multiple items sequentially into a cart and checkout to a single patron in one transaction.
+        </p>
+        <div class="pt-6">
+            <a href="{% url 'transactions:issue' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold hover:bg-accent-container transition-colors shadow-soft">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Return to Standard Issue
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

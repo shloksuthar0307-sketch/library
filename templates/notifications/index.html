@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+
+{% block title %}Index - SmartLibrary{% endblock %}
+
+{% block content %}
+
+<!-- ===================================================================== -->
+<!-- LEFT COLUMN: Channel Configuration & Dynamic Tokens (Col Span 5 = ~42%) -->
+<!-- ===================================================================== -->
+<section class="col-span-12 xl:col-span-5 flex flex-col gap-5">
+<!-- Multi-Channel Selector Tabs -->
+<div class="bg-background p-1.5 rounded-xl border border-gray-200 flex items-center gap-1">
+<button class="flex-1 py-2 px-3 rounded-lg bg-surface text-accent font-medium text-sm font-semibold shadow-soft flex items-center justify-center gap-2 border border-gray-200/60">
+<span class="material-symbols-outlined text-[18px] text-accent" data-icon="mail">mail</span>
+<span>Email Digest (HTML/MIME)</span>
+<span class="ml-1 px-1.5 py-0.5 rounded text-[11px] bg-accent-fixed text-white-fixed font-bold">14 rcpt</span>
+</button>
+<button class="flex-1 py-2 px-3 rounded-lg hover:bg-gray-50 text-accent-variant font-medium text-sm flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="chat">chat</span>
+<span>Slack Webhook</span>
+<span class="ml-1 px-1.5 py-0.5 rounded text-[11px] bg-surface-variant text-secondary font-medium">#leadership</span>
+</button>
+<button class="py-2 px-3 rounded-lg hover:bg-gray-50 text-outline font-medium text-sm flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="sms">sms</span>
+<span>SMS Snippet</span>
+</button>
+</div>
+<!-- Channel Configuration Card: Email Parameters -->
+<div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
+<div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-200">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-accent text-[20px]" data-icon="tune">tune</span>
+<h2 class="font-semibold text-lg text-accent">Email Delivery Parameters</h2>
+</div>
+<span class="text-xs text-outline font-code">MIME Type: multipart/alternative</span>
+</div>
+<div class="space-y-4">
+<!-- Sender Alias -->
+<div>
+<label class="block font-medium text-xs uppercase tracking-wider text-secondary mb-1">Sender Alias &amp; Envelope From</label>
+<div class="relative">
+<input class="w-full text-xs font-code px-3 py-2 bg-background border border-gray-200 rounded-lg text-accent focus:border-primary focus:ring-1 focus:ring-primary" type="text" value="SmartLibrary Automated Stewardship &lt;reports@smartlibrary.university.edu&gt;"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 text-[16px] text-accent" data-icon="verified">verified</span>
+</div>
+</div>
+<!-- Reply-to Address -->
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block font-medium text-xs uppercase tracking-wider text-secondary mb-1">Reply-To Address</label>
+<input class="w-full text-xs font-code px-3 py-2 bg-background border border-gray-200 rounded-lg text-accent focus:border-primary focus:ring-1" type="text" value="provost-circulation-desk@university.edu"/>
+</div>
+<div>
+<label class="block font-medium text-xs uppercase tracking-wider text-secondary mb-1">Digest Cadence Stamp</label>
+<select class="w-full text-xs font-medium px-3 py-2 bg-background border border-gray-200 rounded-lg text-accent">
+<option selected="">Weekly Executive (Mondays 06:00 EST)</option>
+<option>Monthly Board Brief (1st of month)</option>
+<option>Daily Realtime Turnover Exception</option>
+</select>
+</div>
+</div>
+<!-- Subject Line with Dynamic Tokens -->
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="font-medium text-xs uppercase tracking-wider text-secondary">Subject Line Composition</label>
+<span class="text-[11px] text-outline">Characters: 64 / 120 max</span>
+</div>
+<div class="relative flex items-center bg-background border border-gray-200 rounded-lg p-2 gap-1.5 flex-wrap">
+<span class="text-xs font-medium text-accent">[SmartLibrary]</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-code bg-accent-fixed text-white-fixed border border-primary/20">
+                  {{report.name}}
+                </span>
+<span class="text-xs text-accent">-</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-code bg-accent-fixed text-white-fixed border border-primary/20">
+                  {{cadence.period}}
+                </span>
+<span class="text-xs text-outline">(Confidential)</span>
+</div>
+</div>
+<!-- Preheader Text -->
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="font-medium text-xs uppercase tracking-wider text-secondary">Inbox Preview Snippet (Preheader)</label>
+<span class="text-[11px] text-accent font-medium">Rendered by iOS / Gmail</span>
+</div>
+<textarea class="w-full text-xs  px-3 py-2 bg-background border border-gray-200 rounded-lg text-accent focus:border-primary focus:ring-1" rows="2">Weekly executive turnover, hold queue velocity, and SLA compliance metrics for week 44 (Oct 28 – Nov 03, 2024).</textarea>
+</div>
+</div>
+</div>
+<!-- Dynamic Token Variables Reference Bar -->
+<div class="bg-surface rounded-xl border border-gray-200 p-4 shadow-soft">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-accent" data-icon="data_object">data_object</span>
+<h3 class="font-semibold text-lg text-accent text-sm">Dynamic Token Catalog</h3>
+</div>
+<span class="text-[11px] text-outline">Click token to copy or inject</span>
+</div>
+<p class="text-xs text-accent-variant mb-3">These runtime variables resolve against the latest ETL execution state of Pipeline #EX-8902.</p>
+<div class="flex flex-wrap gap-2">
+<button class="group inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-50 hover:bg-accent-fixed border border-gray-200 text-xs font-code text-accent transition-all active:scale-95" title="Copy to clipboard">
+<span>{{report.name}}</span>
+<span class="material-symbols-outlined text-[14px] text-outline group-hover:text-accent" data-icon="content_copy">content_copy</span>
+</button>
+<button class="group inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-50 hover:bg-accent-fixed border border-gray-200 text-xs font-code text-accent transition-all active:scale-95" title="Copy to clipboard">
+<span>{{cadence.period}}</span>
+<span class="material-symbols-outlined text-[14px] text-outline group-hover:text-accent" data-icon="content_copy">content_copy</span>
+</button>
+<button class="group inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-50 hover:bg-accent-fixed border border-gray-200 text-xs font-code text-accent transition-all active:scale-95" title="Copy to clipboard">
+<span>{{circulation.total}}</span>
+<span class="material-symbols-outlined text-[14px] text-outline group-hover:text-accent" data-icon="content_copy">content_copy</span>
+</button>
+<button class="group inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-50 hover:bg-accent-fixed border border-gray-200 text-xs font-code text-accent transition-all active:scale-95" title="Copy to clipboard">
+<span>{{sla.percent}}</span>
+<span class="material-symbols-outlined text-[14px] text-outline group-hover:text-accent" data-icon="content_copy">content_copy</span>
+</button>
+<button class="group inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-50 hover:bg-accent-fixed border border-gray-200 text-xs font-code text-accent transition-all active:scale-95" title="Copy to clipboard">
+<span>{{pipeline.hash}}</span>
+<span class="material-symbols-outlined text-[14px] text-outline group-hover:text-accent" data-icon="content_copy">content_copy</span>
+</button>
+<button class="group inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-50 hover:bg-accent-fixed border border-gray-200 text-xs font-code text-accent transition-all active:scale-95" title="Copy to clipboard">
+<span>{{top_overdue_book}}</span>
+<span class="material-symbols-outlined text-[14px] text-outline group-hover:text-accent" data-icon="content_copy">content_copy</span>
+</button>
+<button class="group inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-50 hover:bg-accent-fixed border border-gray-200 text-xs font-code text-accent transition-all active:scale-95" title="Copy to clipboard">
+<span>{{unsubscribe.link}}</span>
+<span class="material-symbols-outlined text-[14px] text-outline group-hover:text-accent" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Recipient Audience Quick-Check -->
+<div class="bg-surface rounded-xl border border-gray-200 p-4 shadow-soft">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="supervised_user_circle">supervised_user_circle</span>
+<h3 class="font-semibold text-lg text-accent text-sm">Target Audience Routing</h3>
+</div>
+<a class="text-xs text-accent font-medium hover:underline flex items-center gap-0.5" href="#">
+<span>Modify Roster</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="open_in_new">open_in_new</span>
+</a>
+</div>
+<!-- Group Breakdown Pills -->
+<div class="grid grid-cols-3 gap-2 mb-3">
+<div class="p-2.5 rounded-lg bg-background border border-gray-200 text-center">
+<div class="font-bold text-accent text-sm">5</div>
+<div class="text-[11px] text-secondary font-medium leading-tight mt-0.5">Provost Council</div>
+</div>
+<div class="p-2.5 rounded-lg bg-background border border-gray-200 text-center">
+<div class="font-bold text-accent text-sm">6</div>
+<div class="text-[11px] text-secondary font-medium leading-tight mt-0.5">Library Deans</div>
+</div>
+<div class="p-2.5 rounded-lg bg-background border border-gray-200 text-center">
+<div class="font-bold text-accent text-sm">3</div>
+<div class="text-[11px] text-secondary font-medium leading-tight mt-0.5">Bursar Reconcile</div>
+</div>
+</div>
+<!-- Distribution Policy Toggles -->
+<div class="space-y-2.5 pt-2 border-t border-gray-200/60">
+<label class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="attach_file">attach_file</span>
+<span class="text-xs text-accent font-medium">Attach verified PDF &amp; CSV Exports</span>
+</div>
+<input checked="" class="rounded border-gray-300 text-accent focus:ring-primary h-4 w-4" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="vpn_key">vpn_key</span>
+<span class="text-xs text-accent font-medium">Inject SSO Direct-Access Auth Token</span>
+</div>
+<input checked="" class="rounded border-gray-300 text-accent focus:ring-primary h-4 w-4" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Slack Webhook Integration Parameters Card -->
+<div class="bg-surface rounded-xl border border-gray-200 p-4 shadow-soft">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-accent text-[20px]" data-icon="webhook">webhook</span>
+<h3 class="font-semibold text-lg text-accent text-sm">Slack Webhook Configuration</h3>
+</div>
+<span class="px-2 py-0.5 rounded text-[11px] bg-tertiary-container/20 text-accent font-bold">Enabled</span>
+</div>
+<div class="grid grid-cols-2 gap-3 text-xs">
+<div>
+<span class="text-[11px] text-secondary uppercase font-semibold">Destination Channel</span>
+<div class="mt-1 font-code px-2.5 py-1.5 bg-background rounded border border-gray-200 text-accent flex items-center gap-1.5">
+<span class="text-secondary font-bold">#</span>
+<span>library-leadership</span>
+</div>
+</div>
+<div>
+<span class="text-[11px] text-secondary uppercase font-semibold">Bot Identity Handle</span>
+<div class="mt-1 font-medium px-2.5 py-1.5 bg-background rounded border border-gray-200 text-accent">
+                SmartLibrary Digest Bot
+              </div>
+</div>
+<div>
+<span class="text-[11px] text-secondary uppercase font-semibold">Message Accent Tone</span>
+<div class="mt-1 flex items-center gap-2 px-2 py-1.5 bg-background rounded border border-gray-200">
+<span class="w-3.5 h-3.5 rounded bg-accent"></span>
+<span class="font-code text-[11px]">Primary Blue (#0058bd)</span>
+</div>
+</div>
+<div>
+<span class="text-[11px] text-secondary uppercase font-semibold">Severity Classification</span>
+<div class="mt-1 flex items-center gap-1.5 px-2 py-1.5 bg-background rounded border border-gray-200">
+<span class="w-2 h-2 rounded-full bg-accent"></span>
+<span class="font-medium text-[11px]">Executive Briefing</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ===================================================================== -->
+<!-- RIGHT COLUMN: Dual Live Preview Canvas (Col Span 7 = ~58%) -->
+<!-- ===================================================================== -->
+<section class="col-span-12 xl:col-span-7 flex flex-col gap-4">
+<!-- Preview Control Header & Device Switcher -->
+<div class="bg-surface p-3 rounded-xl border border-gray-200 shadow-soft flex flex-wrap items-center justify-between gap-3">
+<!-- Device / Format Selectors -->
+<div class="flex items-center gap-1 bg-background p-1 rounded-lg border border-gray-200">
+<button class="px-3 py-1.5 rounded-md bg-surface shadow-soft font-medium text-sm font-semibold text-accent flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]" data-icon="desktop_windows">desktop_windows</span>
+<span>Desktop Email Client</span>
+</button>
+<button class="px-3 py-1.5 rounded-md hover:bg-gray-50 font-medium text-sm text-secondary flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="smartphone">smartphone</span>
+<span>Mobile Preview</span>
+</button>
+<button class="px-3 py-1.5 rounded-md hover:bg-gray-50 font-medium text-sm text-secondary flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="tag">tag</span>
+<span>Slack Card</span>
+</button>
+</div>
+<!-- Utility / Inspector Tools -->
+<div class="flex items-center gap-2">
+<div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-background">
+<button class="px-2 py-1 hover:bg-gray-50 text-secondary" title="Zoom Out">
+<span class="material-symbols-outlined text-[16px]" data-icon="zoom_out">zoom_out</span>
+</button>
+<span class="text-xs font-code px-2 text-accent font-medium">100%</span>
+<button class="px-2 py-1 hover:bg-gray-50 text-secondary" title="Zoom In">
+<span class="material-symbols-outlined text-[16px]" data-icon="zoom_in">zoom_in</span>
+</button>
+</div>
+<button class="px-2.5 py-1.5 bg-background hover:bg-gray-50 border border-gray-200 rounded-lg text-secondary text-xs flex items-center gap-1 font-medium" title="Reload Live Pipeline Data">
+<span class="material-symbols-outlined text-[16px] text-accent" data-icon="refresh">refresh</span>
+<span>Render Refresh</span>
+</button>
+<button class="px-2.5 py-1.5 bg-background hover:bg-gray-50 border border-gray-200 rounded-lg text-secondary text-xs flex items-center gap-1 font-medium" title="Toggle Code">
+<span class="material-symbols-outlined text-[16px]" data-icon="code">code</span>
+<span>Raw JSON / HTML</span>
+</button>
+</div>
+</div>
+<!-- LIVE EMAIL CLIENT SHELL (Simulated Apple Mail / Outlook) -->
+<div class="rounded-xl border border-gray-200 bg-surface shadow-soft overflow-hidden">
+<!-- Email Client Header Chrome -->
+<div class="bg-background px-5 py-3.5 border-b border-gray-200 flex flex-col gap-1.5">
+<div class="flex items-center justify-between text-xs">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-accent">Subject:</span>
+<span class="font-medium text-accent">[SmartLibrary] Executive Circulation &amp; Turnover Digest - Week 44, Fall 2024 (Confidential)</span>
+</div>
+<span class="text-outline font-code text-[11px]">Today at 06:00 AM (Scheduled)</span>
+</div>
+<div class="flex items-center gap-2 text-xs">
+<span class="text-secondary font-medium">From:</span>
+<span class="text-accent">SmartLibrary Automated Stewardship &lt;reports@smartlibrary.university.edu&gt;</span>
+</div>
+<div class="flex items-center justify-between text-xs">
+<div class="flex items-center gap-2">
+<span class="text-secondary font-medium">To:</span>
+<span class="text-accent-variant font-code text-[11px]">provost-council@university.edu, library-deans@university.edu (+3 others)</span>
+</div>
+<span class="inline-flex items-center gap-1 text-[11px] text-accent font-semibold">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span>
+                TLS 1.3 Encrypted
+              </span>
+</div>
+</div>
+<!-- EMAIL BODY CANVAS (Rendered Enterprise Digest) -->
+<div class="p-6 bg-surface-bright max-h-[580px] overflow-y-auto">
+<div class="max-w-[580px] mx-auto bg-surface border border-gray-200 rounded-lg shadow-soft overflow-hidden">
+<!-- University Top Header Banner -->
+<div class="bg-inverse-surface text-white p-6 border-b-4 border-tertiary-fixed">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-accent flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[24px]" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<div class="font-medium text-xs uppercase tracking-widest text-secondary-fixed-dim">Metropolitan Research University</div>
+<div class="text-lg font-semibold text-white font-bold">SmartLibrary Executive Briefing</div>
+</div>
+</div>
+<span class="text-[11px] font-code px-2 py-1 rounded bg-inverse-surface/80 border border-gray-300 text-secondary-fixed">
+                    #EX-8902
+                  </span>
+</div>
+<div class="mt-4 pt-3 border-t border-gray-300/40 flex items-center justify-between text-xs text-secondary-fixed-dim">
+<span>Circulation &amp; Turnover Digest</span>
+<span class="text-accent-fixed font-medium">Week 44 • Fall Semester 2024</span>
+</div>
+</div>
+<!-- Executive Greeting Block -->
+<div class="p-5 border-b border-gray-200 bg-surface">
+<p class=" text-base text-accent">
+<span class="font-semibold">Good morning Provost Executive Council,</span>
+</p>
+<p class=" text-base text-accent-variant mt-1.5 leading-relaxed text-xs">
+                  Here is your automated weekly circulation briefing for Oct 28 – Nov 03, 2024. Overall system circulation reached <span class="font-semibold text-accent">48,290 items</span> with a sustained turnover index exceeding target benchmarks by <span class="font-semibold text-accent">+14.2%</span>.
+                </p>
+</div>
+<!-- KPI Metric Cards Grid (Email Digest Layout) -->
+<div class="p-5 grid grid-cols-3 gap-3 bg-background/50 border-b border-gray-200">
+<!-- Metric 1 -->
+<div class="bg-surface p-3 rounded-lg border border-gray-200 shadow-soft">
+<div class="text-[11px] font-medium text-secondary uppercase font-semibold">Total Circulation</div>
+<div class="text-headline-sm font-headline-sm font-bold text-accent mt-1">48,290</div>
+<div class="inline-flex items-center gap-0.5 text-[11px] font-semibold text-accent mt-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+<span>+14.2% vs W43</span>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-surface p-3 rounded-lg border border-gray-200 shadow-soft">
+<div class="text-[11px] font-medium text-secondary uppercase font-semibold">Turnover Rate</div>
+<div class="text-headline-sm font-headline-sm font-bold text-accent mt-1">3.42x</div>
+<div class="inline-flex items-center gap-0.5 text-[11px] font-semibold text-accent mt-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="speed">speed</span>
+<span>Optimal Velocity</span>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-surface p-3 rounded-lg border border-gray-200 shadow-soft">
+<div class="text-[11px] font-medium text-secondary uppercase font-semibold">Reshelve SLA</div>
+<div class="text-headline-sm font-headline-sm font-bold text-accent mt-1">96.4%</div>
+<div class="inline-flex items-center gap-0.5 text-[11px] font-semibold text-accent mt-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+<span>Compliant (&gt;95%)</span>
+</div>
+</div>
+</div>
+<!-- Top Hold Queue & Inventory Velocity Section -->
+<div class="p-5 border-b border-gray-200">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-accent" data-icon="local_fire_department">local_fire_department</span>
+<h4 class="font-semibold text-lg text-xs uppercase tracking-wider text-accent">Critical Hold Queue Exceptions</h4>
+</div>
+<span class="text-[11px] text-red-500 font-medium">Overdue Exposure: $3,428.50</span>
+</div>
+<div class="border border-gray-200 rounded-lg overflow-hidden text-xs">
+<table class="w-full text-left">
+<thead class="bg-background text-secondary text-[10px] font-semibold uppercase tracking-wider border-b border-gray-200">
+<tr>
+<th class="py-2 px-3">Title &amp; Resource</th>
+<th class="py-2 px-2 text-center">Active Holds</th>
+<th class="py-2 px-2 text-right">Turnover</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/60 ">
+<tr class="hover:bg-background/30">
+<td class="py-2 px-3 font-medium text-accent">
+                          Designing Data-Intensive Applications
+                          <span class="block text-[10px] text-outline">Kleppmann • CS Grad Reserve (6 copies)</span>
+</td>
+<td class="py-2 px-2 text-center font-bold text-red-500">42 holds</td>
+<td class="py-2 px-2 text-right font-code text-accent font-semibold">8.4x</td>
+</tr>
+<tr class="hover:bg-background/30">
+<td class="py-2 px-3 font-medium text-accent">
+                          Algorithms (4th Edition)
+                          <span class="block text-[10px] text-outline">Sedgewick &amp; Wayne • Main Stacks (12 copies)</span>
+</td>
+<td class="py-2 px-2 text-center font-bold text-secondary">27 holds</td>
+<td class="py-2 px-2 text-right font-code text-accent font-semibold">5.1x</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Action CTAs (Primary Blue Button + Secondary Options) -->
+<div class="p-5 text-center bg-background/30 border-b border-gray-200">
+<a class="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg bg-accent hover:bg-on-primary-fixed-variant text-white font-medium text-sm font-semibold shadow-soft transition-all" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="analytics">analytics</span>
+<span>Open Full Interactive Stewardship Dashboard</span>
+</a>
+<div class="flex items-center justify-center gap-4 mt-3 text-xs">
+<a class="text-accent hover:underline flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[14px]" data-icon="picture_as_pdf">picture_as_pdf</span>
+<span>Download Verified PDF Brief (2.1 MB)</span>
+</a>
+<span class="text-outline">•</span>
+<a class="text-accent hover:underline flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[14px]" data-icon="table_view">table_view</span>
+<span>Export CSV Dataset</span>
+</a>
+</div>
+</div>
+<!-- Cryptographic Footer & Institutional Disclaimer -->
+<div class="p-5 bg-background text-[11px] text-outline leading-relaxed border-t border-gray-200">
+<div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-200/60">
+<span class="font-code text-[10px] text-secondary">SHA-256: 8a9f2c31e77b0c...44a</span>
+<span class="text-accent font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="security">security</span>
+                    FERPA Masking Active
+                  </span>
+</div>
+<p>
+                  You received this digest as an authorized member of the Metropolitan Research University Provost Executive Council. Confidentiality Notice: Higher Education Act Title IV strict compliance applies.
+                </p>
+<div class="mt-2 text-center text-xs">
+<a class="text-secondary hover:underline" href="#">Manage Alert Preferences</a>
+<span class="mx-1.5">•</span>
+<a class="text-secondary hover:underline" href="#">Unsubscribe from Pipeline #EX-8902</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- LIVE SLACK RICH MESSAGE BLOCK PREVIEW (Embedded Enterprise Card) -->
+<div class="rounded-xl border border-gray-200 bg-surface shadow-soft p-4">
+<div class="flex items-center justify-between pb-2 mb-3 border-b border-gray-200">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#4A154B] text-[20px]" data-icon="tag">tag</span>
+<span class="font-semibold text-lg text-xs uppercase tracking-wider text-accent">Slack Webhook Live Render Simulation</span>
+</div>
+<span class="text-[11px] text-outline font-code">channel: #library-leadership</span>
+</div>
+<!-- Realistic Slack Feed Item -->
+<div class="flex items-start gap-3 bg-white p-3.5 rounded-lg border border-slate-200">
+<!-- Bot Avatar -->
+<div class="w-9 h-9 rounded-md bg-accent flex items-center justify-center text-white flex-shrink-0 shadow-soft">
+<span class="material-symbols-outlined text-[20px]" data-icon="auto_stories">auto_stories</span>
+</div>
+<!-- Content Area -->
+<div class="flex-1 min-w-0 text-xs">
+<div class="flex items-center gap-2 mb-1">
+<span class="font-bold text-slate-900 text-sm">SmartLibrary Bot</span>
+<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-500 uppercase tracking-wider">APP</span>
+<span class="text-slate-400 text-[11px]">Today at 6:00 AM</span>
+</div>
+<!-- Slack Card Attachment -->
+<div class="border-l-4 border-primary pl-3 py-1 mt-1.5 bg-slate-50/70 rounded-r">
+<div class="font-bold text-slate-800 text-xs hover:text-accent cursor-pointer flex items-center gap-1">
+<span>📊 Pipeline #EX-8902: Executive Circulation &amp; Turnover Digest (Fall 2024 W44)</span>
+</div>
+<div class="text-slate-600 mt-1 text-[11px] leading-relaxed">
+                  Weekly automated executive telemetry has finished compiling. Total activity is outperforming targets.
+                </div>
+<!-- Slack Fields Grid -->
+<div class="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-slate-200 text-[11px]">
+<div>
+<span class="text-slate-500 font-semibold block text-[10px] uppercase">Circulation</span>
+<span class="font-bold text-slate-900">48,290 (+14.2%)</span>
+</div>
+<div>
+<span class="text-slate-500 font-semibold block text-[10px] uppercase">Turnover SLA</span>
+<span class="font-bold text-emerald-700">96.4% Compliant</span>
+</div>
+<div>
+<span class="text-slate-500 font-semibold block text-[10px] uppercase">Overdue Exposure</span>
+<span class="font-bold text-rose-600">$3,428.50</span>
+</div>
+</div>
+<!-- Slack Interactive Action Block -->
+<div class="flex items-center gap-2 mt-3">
+<button class="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-slate-300 font-semibold text-slate-700 text-[11px] shadow-2xs">
+                    View Dashboard
+                  </button>
+<button class="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-slate-300 font-semibold text-slate-700 text-[11px] shadow-2xs">
+                    Download PDF
+                  </button>
+<button class="px-2.5 py-1 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 font-semibold text-emerald-800 text-[11px] shadow-2xs">
+                    Acknowledge Receipt
+                  </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+{% endblock %}

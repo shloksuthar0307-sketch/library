@@ -1,0 +1,516 @@
+{% extends 'base.html' %}
+
+{% block title %}Return Form - SmartLibrary{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto flex flex-col gap-6">
+<!-- Breadcrumbs & Status Bar -->
+<div class="flex items-center justify-between text-sm  text-secondary">
+<div class="flex items-center gap-2">
+<span>Transactions</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span>Return Book</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-accent font-semibold">Rapid Return &amp; Overdue Desk</span>
+</div>
+<div class="flex items-center gap-3 text-xs font-medium">
+<span class="px-2 py-0.5 rounded bg-gray-50 border border-gray-200 font-code text-accent">SESSION: #DSK-CIRC-04</span>
+<span class="text-accent font-medium flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span> RFID Reader Sync Active
+          </span>
+</div>
+</div>
+<!-- Header & Action Navigation -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-gray-200">
+<div>
+<h1 class="text-3xl font-bold tracking-tight text-accent tracking-tight">Book Return &amp; Overdue Clearance Desk</h1>
+<p class="text-base  text-secondary mt-0.5">Rapid multi-modal check-in terminal with RFID inventory restock, condition inspection, and automated fine assessment.</p>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-3.5 py-2 rounded-lg bg-accent text-white text-sm font-medium flex items-center gap-1.5 shadow-soft hover:bg-accent-container transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="check_circle">check_circle</span>
+<span>Standard Return</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg bg-surface border border-gray-200 text-accent text-sm font-medium flex items-center gap-1.5 hover:bg-gray-50 transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="inventory_2">inventory_2</span>
+<span>Batch Drop-Box (Cart: 5)</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg bg-surface border border-gray-200 text-red-500 text-sm font-medium flex items-center gap-1.5 hover:bg-error-container/20 transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="report_problem">report_problem</span>
+<span>Lost / Damaged Protocol</span>
+</button>
+<button class="px-3 py-2 rounded-lg bg-surface border border-gray-200 text-secondary hover:text-accent text-sm font-medium hover:bg-gray-50 transition-all">
+<span>Reset Desk (Esc)</span>
+</button>
+</div>
+</div>
+<!-- Quick Metrics Counters Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Metric 1 -->
+<div class="p-4 bg-surface border border-gray-200 rounded-xl shadow-soft flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-secondary">Returned Today</span>
+<span class="text-headline-md font-headline-md text-accent mt-1">142 Volumes</span>
+<span class="text-xs font-medium text-accent flex items-center gap-1 mt-1 font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+<span>↑ 12% vs yesterday</span>
+</span>
+</div>
+<div class="w-11 h-11 rounded-lg bg-gray-50 flex items-center justify-center text-accent">
+<span class="material-symbols-outlined text-[24px]" data-icon="assignment_turned_in">assignment_turned_in</span>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="p-4 bg-surface border border-gray-200 rounded-xl shadow-soft flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-secondary">Overdue Items Cleared</span>
+<span class="text-headline-md font-headline-md text-accent mt-1">18 Books</span>
+<span class="text-xs font-medium text-secondary mt-1">100% resolution rate</span>
+</div>
+<div class="w-11 h-11 rounded-lg bg-surface-variant flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[24px]" data-icon="history_toggle_off">history_toggle_off</span>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="p-4 bg-surface border border-gray-200 rounded-xl shadow-soft flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-secondary">Fines Settled</span>
+<span class="text-headline-md font-headline-md text-accent mt-1">$48.50</span>
+<span class="text-xs font-medium text-accent font-medium mt-1">$14.00 Waived via Policy</span>
+</div>
+<div class="w-11 h-11 rounded-lg bg-accent-fixed flex items-center justify-center text-accent">
+<span class="material-symbols-outlined text-[24px]" data-icon="payments">payments</span>
+</div>
+</div>
+<!-- Metric 4 -->
+<div class="p-4 bg-surface border border-gray-200 rounded-xl shadow-soft flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-secondary">Reshelving Queue</span>
+<span class="text-headline-md font-headline-md text-accent mt-1">24 Volumes</span>
+<span class="text-xs font-medium text-accent-container font-medium mt-1">Pending Stacks Floor 3</span>
+</div>
+<div class="w-11 h-11 rounded-lg bg-tertiary-fixed/30 flex items-center justify-center text-accent">
+<span class="material-symbols-outlined text-[24px]" data-icon="shelves">shelves</span>
+</div>
+</div>
+</div>
+<!-- MAIN OPERATIONAL FLOW: 2-COLUMN GRID -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- LEFT COLUMN: Circulation Check-In Steps & Overdue Analysis (8 Cols) -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- STEP 1: Scan Asset & Lookup Bar -->
+<div class="p-5 bg-surface border border-gray-200 rounded-xl shadow-soft">
+<div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-200">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">1</span>
+<h2 class="text-lg font-semibold text-accent">Asset Barcode &amp; RFID Auto-Scan</h2>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-tertiary/10 text-accent border border-tertiary/30 text-xs font-medium flex items-center gap-1.5 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                RFID Pad Active (Target Detected)
+              </span>
+</div>
+<div class="flex flex-col sm:flex-row items-center gap-3">
+<div class="relative flex-1 w-full">
+<span class="material-symbols-outlined absolute left-3.5 top-3 text-accent text-[22px]" data-icon="barcode_scanner">barcode_scanner</span>
+<input class="w-full pl-11 pr-28 py-2.5 bg-background border-2 border-primary rounded-lg text-base font-code font-bold text-accent focus:outline-none ring-2 ring-primary/10" type="text" value="SL-BK-8820-02"/>
+<span class="absolute right-3 top-2.5 text-xs font-medium bg-gray-100 px-2 py-0.5 rounded text-accent font-medium">Auto-Locked</span>
+</div>
+<div class="flex items-center gap-2 w-full sm:w-auto">
+<button class="flex-1 sm:flex-initial px-3.5 py-2.5 bg-accent text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-accent-container shadow-soft">
+<span class="material-symbols-outlined text-[18px]" data-icon="qr_code_scanner">qr_code_scanner</span>
+<span>Scan Barcode</span>
+</button>
+<button class="px-3 py-2.5 bg-surface border border-gray-200 text-secondary hover:text-accent rounded-lg text-sm font-medium hover:bg-gray-50">
+<span>Patron ID</span>
+</button>
+<button class="px-3 py-2.5 bg-surface border border-gray-200 text-secondary hover:text-accent rounded-lg text-sm font-medium hover:bg-gray-50">
+<span>Tx #TX-9398</span>
+</button>
+</div>
+</div>
+</div>
+<!-- STEP 2: Loan Record & Overdue Audit Card -->
+<div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
+<!-- Overdue Notice Banner -->
+<div class="bg-error-container/40 border-b border-error-container p-4 flex items-start sm:items-center justify-between gap-3">
+<div class="flex items-center gap-2.5 text-red-500">
+<span class="material-symbols-outlined text-[24px]" data-icon="warning">warning</span>
+<div>
+<span class="font-semibold text-lg text-on-error-container">Overdue Notice — 12 Days Late</span>
+<p class="text-sm  text-accent-variant">Fine accrual calculation applied per University Academic Lending Policy (Sub-section B4).</p>
+</div>
+</div>
+<span class="px-2.5 py-1 bg-error text-on-error text-xs font-medium rounded-md font-bold uppercase tracking-wider whitespace-nowrap">
+                Action Required
+              </span>
+</div>
+<!-- Two Sub-Cards: Patron & Book Details -->
+<div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+<!-- Sub-Card 1: Patron Details -->
+<div class="p-4 bg-background rounded-xl border border-gray-200/60 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-gray-200/40 mb-3">
+<span class="text-xs font-medium text-secondary uppercase tracking-wider">Patron Information</span>
+<span class="px-2 py-0.5 bg-error-container text-on-error-container text-xs font-medium rounded font-medium">Overdue Hold Applied</span>
+</div>
+<div class="flex items-center gap-3">
+<img class="w-12 h-12 rounded-full object-cover border border-gray-200" data-alt="Portrait photo of a young university faculty researcher in an academic office with soft focus computer science books and warm natural light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWgPHh_Bix1RwLyJcIZOnFgIpZ_H_m2SBEjtp7BS6uBCAVqtrxnJIwRUqvwU3A1WH4hJSubuWJVaWCL5eJPW0M7Q-8o-QWyZC9mbHYcaf1WbGBWFKr4mMzNT32GgCQlGVB2xzrPOztdQrWouMOSFVwm58IFRZ61Kn2XVmBH45UXa52RRusfn8v6TPGcH0AKO3JPbKJXol2ZnXh1-rdS1Hb-UMjAiF7ombD-yENAp96tY62IE0tbwVZoQ"/>
+<div class="flex flex-col">
+<span class="text-lg font-semibold text-accent">Julian Rossi</span>
+<span class="text-sm  text-secondary">ID: FAC-8812 • Dept of Computer Engineering</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-4 text-sm ">
+<div class="bg-surface p-2.5 rounded-lg border border-gray-200/40">
+<span class="text-xs font-medium text-secondary block">Active Checked Out</span>
+<span class="text-lg font-semibold text-accent font-semibold">3 Volumes</span>
+</div>
+<div class="bg-surface p-2.5 rounded-lg border border-gray-200/40">
+<span class="text-xs font-medium text-secondary block">Prior Unpaid Fines</span>
+<span class="text-lg font-semibold text-accent font-semibold">$0.00 Cleared</span>
+</div>
+</div>
+</div>
+<div class="mt-3 pt-2 border-t border-gray-200/30 flex items-center justify-between text-xs font-medium text-secondary">
+<span>Borrowing Tier: Faculty Level A</span>
+<a class="text-accent hover:underline" href="#">View Ledger →</a>
+</div>
+</div>
+<!-- Sub-Card 2: Book & Edition Being Returned -->
+<div class="p-4 bg-background rounded-xl border border-gray-200/60 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-gray-200/40 mb-3">
+<span class="text-xs font-medium text-secondary uppercase tracking-wider">Asset Information</span>
+<span class="px-2 py-0.5 bg-gray-100 text-accent text-xs font-medium rounded font-medium">Copy #02</span>
+</div>
+<div class="flex gap-3.5">
+<div class="w-14 h-20 rounded bg-inverse-surface flex-shrink-0 flex items-center justify-center text-on-tertiary text-center p-1 border border-gray-300/30 shadow-soft">
+<span class="text-[10px] font-bold font-code leading-tight">CLRS<br/>ALGO<br/>4TH ED</span>
+</div>
+<div class="flex flex-col">
+<span class="text-lg font-semibold text-accent leading-snug">Introduction to Algorithms (4th Edition)</span>
+<span class="text-sm  text-secondary mt-0.5">T. Cormen, C. Leiserson, R. Rivest, C. Stein</span>
+<span class="text-sm  text-outline mt-1 font-code">Call No: QA76.6 .I5858 2022</span>
+</div>
+</div>
+<div class="mt-4 p-2.5 bg-surface rounded-lg border border-gray-200/40 flex items-center justify-between text-sm">
+<span class="text-secondary text-xs font-medium">Shelf Destination:</span>
+<span class="font-semibold text-accent flex items-center gap-1 font-code text-sm">
+<span class="material-symbols-outlined text-[16px] text-accent" data-icon="shelves">shelves</span>
+                      Stack C1 • Shelf 08 (Eng. Lib)
+                    </span>
+</div>
+</div>
+<div class="mt-3 pt-2 border-t border-gray-200/30 flex items-center justify-between text-xs font-medium text-secondary">
+<span>ISBN: 978-0262046305</span>
+<span class="text-accent font-medium">RFID Tag Verified</span>
+</div>
+</div>
+</div>
+</div>
+<!-- STEP 3: Physical Condition Inspection & Triage -->
+<div class="p-5 bg-surface border border-gray-200 rounded-xl shadow-soft">
+<div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-200">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">2</span>
+<h2 class="text-lg font-semibold text-accent">Physical Condition Inspection &amp; Triage</h2>
+</div>
+<span class="text-xs font-medium text-secondary">Mandatory Verification</span>
+</div>
+<!-- Condition Chips (Radio Simulation) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<button class="p-3 rounded-lg border border-gray-200 text-left hover:border-gray-300 hover:bg-gray-50 transition-all">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-[18px]" data-icon="check_circle">check_circle</span>
+<span class="text-sm font-medium">Pristine / Good</span>
+</div>
+<span class="text-[11px] text-outline mt-1 block">No wear or marks (No fee)</span>
+</button>
+<button class="p-3 rounded-lg border-2 border-primary bg-accent/5 text-left transition-all">
+<div class="flex items-center gap-2 text-accent font-semibold">
+<span class="material-symbols-outlined text-[18px]" data-icon="radio_button_checked">radio_button_checked</span>
+<span class="text-sm font-medium">Minor Wear / Annotations</span>
+</div>
+<span class="text-[11px] text-secondary mt-1 block">Passes inspection ($0.00 fee)</span>
+</button>
+<button class="p-3 rounded-lg border border-gray-200 text-left hover:border-error hover:bg-error-container/10 transition-all">
+<div class="flex items-center gap-2 text-red-500">
+<span class="material-symbols-outlined text-[18px]" data-icon="warning">warning</span>
+<span class="text-sm font-medium">Damaged Book</span>
+</div>
+<span class="text-[11px] text-outline mt-1 block">Requires bindery repair fee</span>
+</button>
+<button class="p-3 rounded-lg border border-gray-200 text-left hover:border-error hover:bg-error-container/10 transition-all">
+<div class="flex items-center gap-2 text-red-500">
+<span class="material-symbols-outlined text-[18px]" data-icon="cancel">cancel</span>
+<span class="text-sm font-medium">Missing Cover / Code</span>
+</div>
+<span class="text-[11px] text-outline mt-1 block">Replacement protocol</span>
+</button>
+</div>
+<!-- Route and Shelf Reservation Notification Alert -->
+<div class="mt-4 flex flex-col gap-3">
+<div class="p-3.5 bg-tertiary-fixed/15 border border-tertiary rounded-lg flex items-start gap-3 text-sm">
+<span class="material-symbols-outlined text-accent text-[22px] flex-shrink-0" data-icon="bolt">bolt</span>
+<div class="flex-1">
+<span class="font-semibold text-accent">Hold Intercept Alert: 2 Patrons Waiting on Reservation Queue</span>
+<p class="text-accent-variant text-sm mt-0.5">
+                    Do not shelve in General Stacks C1. Route directly to <strong class="text-accent">Reservation Hold Shelf A3</strong> for patron <span class="underline">Sara Al-Mansoor (ID: STU-9102)</span>. Hold slip printing queued.
+                  </p>
+</div>
+<span class="px-2 py-0.5 bg-tertiary text-on-tertiary rounded text-xs font-bold">Rerouted</span>
+</div>
+<div class="p-3 bg-gray-50 rounded-lg flex items-center justify-between text-sm  text-secondary">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="move_to_inbox">move_to_inbox</span>
+<span>Physical Sorting Tote Assignment:</span>
+<span class="text-accent font-semibold">Tote R-02 (Holds Bay 1)</span>
+</div>
+<span class="text-xs font-medium text-accent font-medium cursor-pointer hover:underline">Change Tote</span>
+</div>
+</div>
+</div>
+<!-- STEP 4: Fine Breakdown & Settlement Options -->
+<div class="p-5 bg-surface border border-gray-200 rounded-xl shadow-soft">
+<div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-200">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">3</span>
+<h2 class="text-lg font-semibold text-accent">Fine Assessment &amp; Settlement Matrix</h2>
+</div>
+<span class="text-xs font-medium text-red-500 font-semibold bg-error-container/40 px-2 py-0.5 rounded">Outstanding $6.00</span>
+</div>
+<!-- Overdue Schedule Calculation -->
+<div class="bg-background p-4 rounded-xl border border-gray-200/60 flex flex-col gap-3">
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm  border-b border-gray-200/40 pb-3">
+<div>
+<span class="text-xs font-medium text-secondary block">Due Date</span>
+<span class="font-semibold text-accent">Oct 12, 2024</span>
+</div>
+<div>
+<span class="text-xs font-medium text-secondary block">Return Date</span>
+<span class="font-semibold text-accent">Oct 24, 2024</span>
+</div>
+<div>
+<span class="text-xs font-medium text-secondary block">Total Days Overdue</span>
+<span class="font-semibold text-red-500">12 Calendar Days</span>
+</div>
+<div>
+<span class="text-xs font-medium text-secondary block">Grace Period Exemption</span>
+<span class="font-semibold text-accent">-2 Days (-$1.00)</span>
+</div>
+</div>
+<!-- Itemized Line Items -->
+<div class="flex flex-col gap-1.5 text-sm  pt-1">
+<div class="flex justify-between items-center text-secondary">
+<span>Billable Overdue Days (10 days × $0.50 / day)</span>
+<span class="font-code font-medium text-accent">$5.00</span>
+</div>
+<div class="flex justify-between items-center text-secondary">
+<span>Automated Overdue Notice / Restock Administrative Fee</span>
+<span class="font-code font-medium text-accent">$1.00</span>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-gray-200 text-accent font-semibold text-lg font-semibold">
+<span>Total Due For Clearance</span>
+<span class="text-headline-sm font-headline-sm text-red-500 font-code">$6.00</span>
+</div>
+</div>
+</div>
+<!-- Fine Settlement Mode Selector -->
+<div class="mt-5 flex flex-col gap-3">
+<label class="text-sm font-medium text-accent font-semibold">Select Settlement Action:</label>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<!-- Option 1: Pay Now (Active) -->
+<div class="p-3.5 rounded-xl border-2 border-primary bg-accent/5 flex flex-col justify-between cursor-pointer">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-accent text-[20px]" data-icon="credit_card">credit_card</span>
+<span class="text-sm font-medium text-accent font-bold">Pay Now</span>
+</div>
+<p class="text-sm  text-secondary mt-1">Cash, Card, or Campus Pay RFID Tap.</p>
+<div class="mt-3 flex items-center justify-between pt-2 border-t border-primary/20">
+<span class="text-xs font-medium text-accent font-semibold">Selected</span>
+<span class="w-2 h-2 rounded-full bg-accent"></span>
+</div>
+</div>
+<!-- Option 2: Charge to Account -->
+<div class="p-3.5 rounded-xl border border-gray-200 bg-surface flex flex-col justify-between hover:bg-gray-50 cursor-pointer transition-all">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="account_balance">account_balance</span>
+<span class="text-sm font-medium text-accent font-semibold">Post to Account</span>
+</div>
+<p class="text-sm  text-secondary mt-1">Deferred to Faculty payroll or semester bill.</p>
+<div class="mt-3 flex items-center justify-between pt-2 border-t border-gray-200/50">
+<span class="text-xs font-medium text-outline">Billed Nov 30</span>
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+<!-- Option 3: Waive Fine -->
+<div class="p-3.5 rounded-xl border border-gray-200 bg-surface flex flex-col justify-between hover:bg-gray-50 cursor-pointer transition-all">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="rule">rule</span>
+<span class="text-sm font-medium text-accent font-semibold">Waive Fine</span>
+</div>
+<p class="text-sm  text-secondary mt-1">Curator supervisor override needed.</p>
+<div class="mt-3 flex items-center justify-between pt-2 border-t border-gray-200/50">
+<span class="text-xs font-medium text-outline">Exemption Req.</span>
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="shield">shield</span>
+</div>
+</div>
+</div>
+<!-- Settlement Details Form Row -->
+<div class="p-3 bg-background rounded-lg border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 mt-1">
+<div class="flex items-center gap-2 text-sm ">
+<span class="material-symbols-outlined text-accent text-[20px]" data-icon="contactless">contactless</span>
+<span class="text-accent font-medium">Campus Card Reader Active:</span>
+<span class="text-secondary">Awaiting patron NFC tap or swipe on Terminal #04</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-1 bg-surface border border-gray-200 text-xs font-medium rounded font-code text-accent">ID: FAC-8812</span>
+<button class="px-3 py-1 bg-accent text-white text-xs font-medium rounded hover:bg-accent-container">Authorize $6.00</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Return Authorization & Session Stream (4 Cols) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Card 1: Check-in Authorization Summary (Sticky Style) -->
+<div class="p-5 bg-surface border border-gray-200 rounded-xl shadow-soft flex flex-col gap-4">
+<div class="flex items-center justify-between pb-3 border-b border-gray-200">
+<span class="text-xs font-medium text-outline font-bold tracking-wider">CHECK-IN AUTHORIZATION</span>
+<span class="px-2 py-0.5 rounded bg-tertiary/10 text-accent border border-tertiary/20 text-xs font-medium font-semibold">
+                Ready to Process
+              </span>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex justify-between text-sm ">
+<span class="text-secondary">Asset:</span>
+<span class="font-semibold text-accent text-right truncate max-w-[180px]">Algorithms (4th Ed)</span>
+</div>
+<div class="flex justify-between text-sm ">
+<span class="text-secondary">Barcode UID:</span>
+<span class="font-code text-accent">SL-BK-8820-02</span>
+</div>
+<div class="flex justify-between text-sm ">
+<span class="text-secondary">Patron Name:</span>
+<span class="text-accent">Julian Rossi (Faculty)</span>
+</div>
+<div class="flex justify-between text-sm ">
+<span class="text-secondary">Check-In Time:</span>
+<span class="text-accent font-code">Today, 14:38:12</span>
+</div>
+<div class="flex justify-between text-sm ">
+<span class="text-secondary">Condition Status:</span>
+<span class="text-accent font-medium">Minor Wear (Approved)</span>
+</div>
+<div class="flex justify-between text-sm  pt-2 border-t border-gray-200">
+<span class="text-secondary">Overdue Penalty:</span>
+<span class="text-red-500 font-code font-semibold">$6.00</span>
+</div>
+<div class="flex justify-between text-sm ">
+<span class="text-secondary">Payment Method:</span>
+<span class="text-accent font-medium">Campus Pay NFC</span>
+</div>
+</div>
+<!-- Hold Slip Routing Badge -->
+<div class="p-3 bg-surface-variant/40 rounded-lg border border-secondary-container flex items-start gap-2.5">
+<span class="material-symbols-outlined text-accent text-[20px]" data-icon="alt_route">alt_route</span>
+<div class="text-sm ">
+<span class="font-bold text-accent block text-sm">Routing Notice</span>
+<span class="text-secondary text-[12px]">Direct routing to Hold Shelf A3 (Patron: Sara Al-Mansoor). General reshelving cancelled.</span>
+</div>
+</div>
+<!-- Primary Actions -->
+<div class="flex flex-col gap-2.5 pt-2">
+<button class="w-full py-3 px-4 bg-accent hover:bg-accent-container text-white rounded-xl text-sm font-medium font-bold flex items-center justify-center gap-2 shadow transition-all active:scale-98">
+<span class="material-symbols-outlined text-[20px]" data-icon="task_alt">task_alt</span>
+<span>Confirm Check-In &amp; Clear Return (Enter ↵)</span>
+</button>
+<button class="w-full py-2.5 px-4 bg-surface border border-gray-200 text-accent hover:bg-gray-50 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="print">print</span>
+<span>Print Return Receipt &amp; Hold Slip</span>
+</button>
+<button class="w-full py-2 px-4 text-secondary hover:text-accent text-sm font-medium flex items-center justify-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="skip_next">skip_next</span>
+<span>Scan Next Return Item</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Recent Returns Desk Stream (Live Desk Activity) -->
+<div class="p-5 bg-surface border border-gray-200 rounded-xl shadow-soft flex flex-col gap-3">
+<div class="flex items-center justify-between pb-2 border-b border-gray-200">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<h3 class="text-lg font-semibold text-accent text-[15px]">Recent Desk Activity</h3>
+</div>
+<span class="text-xs font-medium text-secondary font-code">Terminal 04</span>
+</div>
+<!-- List of stream items -->
+<div class="flex flex-col divide-y divide-outline-variant/60">
+<!-- Item 1 -->
+<div class="py-3 flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-accent font-medium leading-snug">Designing Data-Intensive Applications</span>
+<span class="text-sm  text-secondary text-[12px]">Returned by Marcus Chen • <span class="text-accent">On Time ($0.00)</span></span>
+<span class="text-outline text-[11px] mt-0.5">2m ago • Re-shelved Cart A1</span>
+</div>
+<button class="px-2 py-1 bg-background hover:bg-gray-50 border border-gray-200 rounded text-xs font-medium text-secondary">
+                  Undo
+                </button>
+</div>
+<!-- Item 2 -->
+<div class="py-3 flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-accent font-medium leading-snug">Clean Code: Agile Software</span>
+<span class="text-sm  text-secondary text-[12px]">Returned by Aria Thorne • <span class="text-accent">On Time ($0.00)</span></span>
+<span class="text-outline text-[11px] mt-0.5">11m ago • In Hold Queue</span>
+</div>
+<button class="px-2 py-1 bg-background hover:bg-gray-50 border border-gray-200 rounded text-xs font-medium text-secondary">
+                  Undo
+                </button>
+</div>
+<!-- Item 3 -->
+<div class="py-3 flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-accent font-medium leading-snug">Modern Operating Systems</span>
+<span class="text-sm  text-secondary text-[12px]">Returned by David Kim • <span class="text-red-500">1 Day Late ($0.50 Paid)</span></span>
+<span class="text-outline text-[11px] mt-0.5">25m ago • Receipt #R-819</span>
+</div>
+<button class="px-2 py-1 bg-background hover:bg-gray-50 border border-gray-200 rounded text-xs font-medium text-secondary">
+                  Undo
+                </button>
+</div>
+</div>
+<button class="w-full py-2 mt-1 text-center text-sm font-medium text-accent hover:underline flex items-center justify-center gap-1">
+<span>View All Desk Session Logs (142 Today)</span>
+<span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Quick Shortcuts Legend Card -->
+<div class="p-4 bg-background border border-gray-200/80 rounded-xl text-sm  text-secondary">
+<span class="text-xs font-medium text-accent font-semibold block mb-2">KEYBOARD COMMANDS</span>
+<div class="grid grid-cols-2 gap-2 text-[12px]">
+<div class="flex items-center gap-2">
+<kbd class="px-1.5 py-0.5 bg-surface border border-gray-200 rounded font-code text-accent">Enter</kbd>
+<span>Clear &amp; Return</span>
+</div>
+<div class="flex items-center gap-2">
+<kbd class="px-1.5 py-0.5 bg-surface border border-gray-200 rounded font-code text-accent">⌘ P</kbd>
+<span>Print Slips</span>
+</div>
+<div class="flex items-center gap-2">
+<kbd class="px-1.5 py-0.5 bg-surface border border-gray-200 rounded font-code text-accent">Esc</kbd>
+<span>Reset Scanner</span>
+</div>
+<div class="flex items-center gap-2">
+<kbd class="px-1.5 py-0.5 bg-surface border border-gray-200 rounded font-code text-accent">F4</kbd>
+<span>Override Fine</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+{% endblock %}

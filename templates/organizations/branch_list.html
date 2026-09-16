@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Branches - SmartLibrary{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Library Branches</h1>
+            <p class="mt-2 text-sm text-gray-700">Manage physical locations for your organization.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        <!-- Branch List -->
+        <div class="lg:col-span-2">
+            <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg overflow-hidden">
+                <ul role="list" class="divide-y divide-gray-100">
+                    {% for branch in branches %}
+                    <li class="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6">
+                        <div class="flex min-w-0 gap-x-4">
+                            <div class="h-12 w-12 flex-none rounded-full bg-gray-50 flex items-center justify-center ring-1 ring-gray-900/10">
+                                <svg class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-auto">
+                                <p class="text-sm font-semibold leading-6 text-gray-900">
+                                    {{ branch.name }}
+                                    {% if branch.is_main %}
+                                        <span class="ml-2 inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Main Branch</span>
+                                    {% endif %}
+                                </p>
+                                <p class="mt-1 truncate text-xs leading-5 text-gray-500">Code: {{ branch.code }} &middot; {{ branch.address|default:"No address provided" }}</p>
+                            </div>
+                        </div>
+                        <div class="flex shrink-0 items-center gap-x-4">
+                            <div class="hidden sm:flex sm:flex-col sm:items-end">
+                                <p class="text-sm leading-6 text-gray-900">{{ branch.bookcopy_set.count|default:"0" }} Copies</p>
+                            </div>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="px-4 py-8 sm:px-6 text-center text-sm text-gray-500">
+                        No branches found. Add your first branch using the form.
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Add Branch Form -->
+        <div class="lg:col-span-1">
+            <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h3 class="text-base font-semibold leading-6 text-gray-900">Add New Branch</h3>
+                </div>
+                <form method="post" class="p-6">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="mb-4 rounded-md bg-red-50 p-4">
+                        <div class="text-sm text-red-700">{{ form.errors }}</div>
+                    </div>
+                    {% endif %}
+
+                    <div class="space-y-4">
+                        {% for field in form %}
+                        <div>
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900">
+                                {{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            <div class="mt-2">
+                                {% if field.field.widget.input_type == 'checkbox' %}
+                                    <div class="flex items-center h-6">
+                                        <input type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                               {% if field.value %}checked{% endif %}
+                                               class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black">
+                                    </div>
+                                {% else %}
+                                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                                           name="{{ field.name }}" 
+                                           id="{{ field.id_for_label }}"
+                                           value="{{ field.value|default_if_none:'' }}"
+                                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6">
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button type="submit" class="w-full flex justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+                            Add Branch
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

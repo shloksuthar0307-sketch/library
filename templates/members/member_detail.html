@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ member.user.get_full_name|default:member.user.username }} - LIBRIX{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Back link -->
+    <a href="{% url 'members:list' %}" class="inline-flex items-center gap-2 text-sm text-secondary hover:text-primary transition-colors mb-6">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Back to Members
+    </a>
+
+    <!-- Profile Header -->
+    <div class="bg-surface border border-gray-200 rounded-xl shadow-soft p-6 mb-6">
+        <div class="flex items-start gap-6">
+            <div class="w-20 h-20 rounded-full bg-accent text-white flex items-center justify-center text-3xl font-bold shrink-0">
+                {{ member.user.username|first|upper }}
+            </div>
+            <div class="flex-1">
+                <h1 class="text-2xl font-bold text-primary">{{ member.user.get_full_name|default:member.user.username }}</h1>
+                <p class="text-secondary mt-1">{{ member.user.email }}</p>
+                <div class="flex items-center gap-4 mt-3">
+                    <span class="text-sm text-muted font-mono">ID: {{ member.member_id|default:"—" }}</span>
+                    {% if member.status == 'ACTIVE' %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                    {% elif member.status == 'SUSPENDED' %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Suspended</span>
+                    {% else %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ member.status }}</span>
+                    {% endif %}
+                    <span class="text-sm text-muted">Joined {{ member.membership_date|date:"M d, Y"|default:"—" }}</span>
+                </div>
+            </div>
+            <div class="flex gap-2 shrink-0">
+                <a href="{% url 'members:list' %}" class="px-4 py-2 bg-background border border-gray-200 text-secondary font-medium text-sm rounded-lg hover:bg-gray-50 transition-colors">
+                    Edit Member
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft text-center">
+            <p class="text-2xl font-bold text-primary">0</p>
+            <p class="text-xs text-secondary mt-1">Books Borrowed</p>
+        </div>
+        <div class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft text-center">
+            <p class="text-2xl font-bold text-primary">0</p>
+            <p class="text-xs text-secondary mt-1">Currently Issued</p>
+        </div>
+        <div class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft text-center">
+            <p class="text-2xl font-bold text-primary">0</p>
+            <p class="text-xs text-secondary mt-1">Reservations</p>
+        </div>
+        <div class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft text-center">
+            <p class="text-2xl font-bold text-red-500">$0.00</p>
+            <p class="text-xs text-secondary mt-1">Outstanding Fines</p>
+        </div>
+    </div>
+
+    <!-- Currently Borrowed -->
+    <div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-background">
+            <h2 class="text-lg font-semibold text-primary">Borrowing History</h2>
+        </div>
+        <div class="p-8 text-center text-secondary">
+            <span class="material-symbols-outlined text-4xl text-muted block mb-2">history</span>
+            <p>No borrowing history yet.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
