@@ -3,226 +3,153 @@
 {% block title %}Books - LIBRIX{% endblock %}
 
 {% block content %}
-<!-- Page Header -->
-<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 stagger-1">
     <div>
-        <h1 class="text-3xl font-bold text-primary tracking-tight">{% if request.user.role == 'MEMBER' %}Discover Books{% else %}Books{% endif %}</h1>
-        <p class="text-secondary mt-1">
-            {% if request.user.role == 'MEMBER' %}Explore the library catalog and find your next read.{% else %}Manage your library collection.{% endif %}
-        </p>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">{% if request.user.role == 'MEMBER' %}Discover Books{% else %}Library Catalog{% endif %}</h1>
+        <p class="text-[var(--color-muted)]">{% if request.user.role == 'MEMBER' %}Explore the collection and find your next great read.{% else %}Manage your library collection and inventory.{% endif %}</p>
     </div>
+    
     {% if request.user.role != 'MEMBER' and request.user.is_staff_member %}
-    <a href="{% url 'books:add' %}" class="bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-soft flex items-center gap-2">
+    <a href="{% url 'books:add' %}" class="btn btn-primary">
         <span class="material-symbols-outlined text-[20px]">add</span>
         Add New Book
     </a>
     {% endif %}
 </div>
 
-<!-- SEARCH AND FILTER BAR -->
-<form method="GET" action="{% url 'books:list' %}" id="filter-form" class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft mb-6 space-y-4">
-    <div class="flex flex-col md:flex-row gap-4">
-        <!-- Search Input -->
-        <div class="relative flex-1">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-secondary">search</span>
-            <input type="text" name="q" value="{{ current_q }}" placeholder="Search by Title, Author, ISBN-13..." class="w-full pl-10 pr-4 py-2.5 bg-background border border-gray-200 rounded-lg text-sm text-primary focus:outline-none focus:ring-1 focus:ring-accent transition-all placeholder:text-muted">
+<!-- Filters & Search -->
+<div class="glass-panel p-4 mb-8 stagger-2">
+    <form method="GET" action="{% url 'books:list' %}" id="filter-form" class="flex flex-wrap gap-4 items-end">
+        
+        <div class="flex-1 min-w-[240px]">
+            <label class="input-label mb-1 block">Search</label>
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-[18px]">search</span>
+                <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Title, author, ISBN..." class="input-field pl-10">
+            </div>
         </div>
-        <!-- Sort Dropdown -->
-        <div class="flex items-center gap-3 shrink-0">
-            <span class="text-sm font-medium text-secondary">Sort by:</span>
-            <select name="sort" onchange="this.form.submit()" class="py-2.5 px-4 bg-background border border-gray-200 rounded-lg text-sm font-medium text-accent focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer appearance-none pr-10 relative">
-                <option value="-created_date" {% if current_sort == '-created_date' %}selected{% endif %}>Date Added (Newest)</option>
+
+        <div class="w-full sm:w-auto min-w-[150px]">
+            <label class="input-label mb-1 block">Category</label>
+            <select name="category" onchange="this.form.submit()" class="input-field cursor-pointer">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="w-full sm:w-auto min-w-[150px]">
+            <label class="input-label mb-1 block">Availability</label>
+            <select name="availability" onchange="this.form.submit()" class="input-field cursor-pointer">
+                <option value="all" {% if current_availability == 'all' %}selected{% endif %}>All Books</option>
+                <option value="available" {% if current_availability == 'available' %}selected{% endif %}>Available Now</option>
+                <option value="issued" {% if current_availability == 'issued' %}selected{% endif %}>Checked Out</option>
+            </select>
+        </div>
+
+        <div class="w-full sm:w-auto min-w-[150px]">
+            <label class="input-label mb-1 block">Sort By</label>
+            <select name="sort" onchange="this.form.submit()" class="input-field cursor-pointer">
+                <option value="-created_date" {% if current_sort == '-created_date' %}selected{% endif %}>Newest Added</option>
                 <option value="title" {% if current_sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
                 <option value="author" {% if current_sort == 'author' %}selected{% endif %}>Author (A-Z)</option>
             </select>
         </div>
-    </div>
 
-    <!-- Filters Row -->
-    <div class="flex flex-wrap items-center gap-3">
-        <span class="text-xs font-bold text-muted tracking-wider uppercase mr-2">Filters:</span>
-        
-        <select name="category" onchange="this.form.submit()" class="py-2 px-3 bg-background border border-gray-200 rounded-lg text-sm font-medium text-accent cursor-pointer focus:outline-none focus:border-accent">
-            <option value="all">Faculty / Category</option>
-            {% for cat in categories %}
-                <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
-            {% endfor %}
-        </select>
-        
-        <select name="availability" onchange="this.form.submit()" class="py-2 px-3 bg-background border border-gray-200 rounded-lg text-sm font-medium text-accent cursor-pointer focus:outline-none focus:border-accent">
-            <option value="all" {% if current_availability == 'all' %}selected{% endif %}>Availability: All</option>
-            <option value="available" {% if current_availability == 'available' %}selected{% endif %}>Available</option>
-            <option value="issued" {% if current_availability == 'issued' %}selected{% endif %}>Issued</option>
-        </select>
-
-        <button type="submit" class="hidden">Search</button>
-
-        <a href="{% url 'books:list' %}" class="ml-auto flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover transition-colors">
-            <span class="material-symbols-outlined text-[18px]">refresh</span>
-            Reset All
+        <a href="{% url 'books:list' %}" class="btn btn-ghost" title="Clear Filters">
+            <span class="material-symbols-outlined text-[18px]">close</span>
         </a>
-    </div>
-</form>
+    </form>
+</div>
 
-{% if request.user.role != 'MEMBER' %}
-<!-- BULK ACTION BAR (Hidden by default, shown via JS) -->
-<div id="bulk-action-bar" class="hidden bg-surface border border-gray-200 rounded-xl p-3 shadow-soft mb-6 flex items-center gap-4 transition-all animate-fade-in">
-    <div class="flex items-center gap-2 text-accent font-medium text-sm pl-2 border-r border-gray-200 pr-4">
-        <span class="material-symbols-outlined text-[18px]">check_box</span>
-        <span id="selected-count">0 books selected</span>
+<!-- Books Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {% for book in books %}
+    <div class="glass-panel group overflow-hidden flex flex-col stagger-3">
+        <div class="spotlight"></div>
+        
+        <!-- Book Cover -->
+        <a href="{% url 'books:detail' book.pk %}" class="block relative aspect-[2/3] bg-[var(--color-surface-2)] border-b border-[var(--color-border)] overflow-hidden">
+            {% if book.cover_image %}
+                <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            {% else %}
+                <div class="w-full h-full flex flex-col justify-center items-center text-[var(--color-muted)] p-6 text-center">
+                    <span class="material-symbols-outlined text-4xl mb-2">menu_book</span>
+                    <span class="text-xs font-mono opacity-50">{{ book.isbn }}</span>
+                </div>
+            {% endif %}
+            
+            <!-- Availability Badge overlay -->
+            <div class="absolute top-3 right-3 z-10">
+                {% if book.available_copies > 0 %}
+                    <span class="badge badge-success bg-[var(--color-surface)]/90 backdrop-blur-sm border-[var(--color-success)] shadow-lg">AVAILABLE</span>
+                {% else %}
+                    <span class="badge badge-warning bg-[var(--color-surface)]/90 backdrop-blur-sm border-[var(--color-warning)] shadow-lg">ON LOAN</span>
+                {% endif %}
+            </div>
+        </a>
+
+        <!-- Book Info -->
+        <div class="p-5 flex flex-col flex-1 z-10">
+            <a href="{% url 'books:detail' book.pk %}" class="text-base font-bold text-[var(--color-text)] mb-1 hover:text-[var(--color-primary)] transition-colors line-clamp-1" title="{{ book.title }}">
+                {{ book.title }}
+            </a>
+            <p class="text-sm text-[var(--color-muted)] mb-3 line-clamp-1">{{ book.author }}</p>
+            
+            <div class="flex items-center gap-2 mb-4 mt-auto">
+                <span class="text-xs text-[var(--color-muted)] px-2 py-1 bg-[var(--color-surface-2)] rounded border border-[var(--color-border)]">{{ book.category.name|default:"Uncategorized" }}</span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-4 border-t border-[var(--color-border)] flex gap-2">
+                <a href="{% url 'books:detail' book.pk %}" class="btn btn-secondary flex-1 text-xs">View Details</a>
+                
+                {% if request.user.role != 'MEMBER' and request.user.is_staff_member %}
+                <a href="{% url 'books:edit' book.pk %}" class="btn btn-secondary w-9 p-0 flex items-center justify-center hover:text-[var(--color-primary)]" title="Edit">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                </a>
+                <a href="{% url 'books:delete' book.pk %}" class="btn btn-secondary w-9 p-0 flex items-center justify-center hover:text-[var(--color-danger)] hover:border-[var(--color-danger)]" title="Delete">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                </a>
+                {% else %}
+                    {% if book.available_copies == 0 %}
+                    <button class="btn btn-secondary w-9 p-0 flex items-center justify-center hover:text-[var(--color-primary)]" title="Reserve">
+                        <span class="material-symbols-outlined text-[18px]">bookmark_add</span>
+                    </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
     </div>
-    
-    <button onclick="alert('Printing barcode labels for selected books...')" class="flex items-center gap-2 text-accent hover:bg-green-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-transparent hover:border-green-100">
-        <span class="material-symbols-outlined text-[18px]">sell</span> Print Barcode Labels
-    </button>
-    <button onclick="alert('Opening location editor...')" class="flex items-center gap-2 text-accent hover:bg-green-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-transparent hover:border-green-100">
-        <span class="material-symbols-outlined text-[18px]">move_up</span> Change Shelf Location
-    </button>
-    <button onclick="alert('Opening metadata bulk editor...')" class="flex items-center gap-2 text-accent hover:bg-green-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-transparent hover:border-green-100">
-        <span class="material-symbols-outlined text-[18px]">edit_note</span> Bulk Metadata Edit
-    </button>
-    <button onclick="alert('Archiving selected books...')" class="flex items-center gap-2 text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-transparent hover:border-red-100">
-        <span class="material-symbols-outlined text-[18px]">archive</span> Archive / Deaccession
-    </button>
-    
-    <button onclick="deselectAll()" class="ml-auto text-sm text-secondary hover:text-primary transition-colors pr-2">
-        Deselect all
-    </button>
+    {% empty %}
+    <div class="col-span-full glass-panel py-20 flex flex-col items-center justify-center text-center stagger-3">
+        <div class="w-16 h-16 rounded-full bg-[var(--color-surface-2)] flex items-center justify-center mb-4 text-[var(--color-muted)]">
+            <span class="material-symbols-outlined text-3xl">search_off</span>
+        </div>
+        <h3 class="text-xl font-bold text-[var(--color-text)] mb-2">No books found</h3>
+        <p class="text-[var(--color-muted)] max-w-md">We couldn't find any books matching your current filters. Try adjusting your search criteria or clear all filters.</p>
+        <a href="{% url 'books:list' %}" class="btn btn-secondary mt-6">Clear All Filters</a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="mt-8 flex justify-center stagger-4">
+    <div class="inline-flex glass-panel rounded-lg overflow-hidden">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_availability %}&availability={{ current_availability }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" class="px-4 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] border-r border-[var(--color-border)]">Previous</a>
+        {% endif %}
+        
+        <span class="px-4 py-2 text-sm font-medium text-[var(--color-muted)] border-r border-[var(--color-border)]">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_availability %}&availability={{ current_availability }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" class="px-4 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]">Next</a>
+        {% endif %}
+    </div>
 </div>
 {% endif %}
-
-<!-- BOOK TABLE -->
-<div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="border-b border-gray-200 bg-background text-xs font-semibold text-muted uppercase tracking-wider">
-                    {% if request.user.role != 'MEMBER' %}
-                    <th class="w-12 px-4 py-3 text-center">
-                        <input type="checkbox" id="select-all" class="rounded border-gray-300 text-accent focus:ring-accent cursor-pointer" onchange="toggleAll(this)">
-                    </th>
-                    {% endif %}
-                    <th class="px-4 py-3">Book Title</th>
-                    <th class="px-4 py-3">Author</th>
-                    <th class="px-4 py-3">Category</th>
-                    <th class="px-4 py-3">ISBN</th>
-                    <th class="px-4 py-3">Copies</th>
-                    <th class="px-4 py-3">Status</th>
-                    {% if request.user.role != 'MEMBER' %}
-                    <th class="px-4 py-3 text-right">Actions</th>
-                    {% endif %}
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                {% for book in books %}
-                <tr class="hover:bg-gray-50 transition-colors group">
-                    {% if request.user.role != 'MEMBER' %}
-                    <td class="px-4 py-4 text-center">
-                        <input type="checkbox" class="book-checkbox rounded border-gray-300 text-accent focus:ring-accent cursor-pointer" onchange="updateBulkAction()">
-                    </td>
-                    {% endif %}
-                    <td class="px-4 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-14 bg-background border border-gray-200 rounded overflow-hidden flex items-center justify-center shrink-0">
-                                {% if book.cover_image %}
-                                <img src="{{ book.cover_image.url }}" class="w-full h-full object-cover">
-                                {% else %}
-                                <span class="material-symbols-outlined text-muted text-xl">book</span>
-                                {% endif %}
-                            </div>
-                            <span class="font-medium text-primary"><a href="{% url 'books:detail' book.pk %}" class="hover:text-accent hover:underline">{{ book.title }}</a></span>
-                        </div>
-                    </td>
-                    <td class="px-4 py-4 text-sm text-secondary">{{ book.author.name|default:"-" }}</td>
-                    <td class="px-4 py-4 text-sm text-secondary">{{ book.category.name|default:"-" }}</td>
-                    <td class="px-4 py-4 text-sm text-secondary font-mono">{{ book.isbn }}</td>
-                    <td class="px-4 py-4 text-sm text-secondary">{{ book.available_copies }} / {{ book.total_copies }}</td>
-                    <td class="px-4 py-4">
-                        {% if book.available_copies > 0 %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Available
-                        </span>
-                        {% else %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            Issued
-                        </span>
-                        {% endif %}
-                    </td>
-                    {% if request.user.role != 'MEMBER' %}
-                    <td class="px-4 py-4 text-right">
-                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <a href="{% url 'books:detail' book.pk %}" class="p-1.5 text-secondary hover:text-accent bg-background rounded-lg hover:bg-green-50 transition-colors" title="View Details">
-                                <span class="material-symbols-outlined text-[18px]">visibility</span>
-                            </a>
-                            <a href="{% url 'books:edit' book.pk %}" class="p-1.5 text-secondary hover:text-accent bg-background rounded-lg hover:bg-green-50 transition-colors" title="Edit">
-                                <span class="material-symbols-outlined text-[18px]">edit</span>
-                            </a>
-                            <a href="{% url 'books:delete' book.pk %}" class="p-1.5 text-secondary hover:text-red-600 bg-background rounded-lg hover:bg-red-50 transition-colors" title="Delete">
-                                <span class="material-symbols-outlined text-[18px]">delete</span>
-                            </a>
-                        </div>
-                    </td>
-                    {% endif %}
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="8" class="px-4 py-12 text-center text-secondary">
-                        <span class="material-symbols-outlined text-4xl mb-2 text-muted">search_off</span>
-                        <p>No books found matching your filters.</p>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    
-    <!-- Minimal Pagination -->
-    <div class="px-4 py-3 border-t border-gray-200 bg-background flex items-center justify-between">
-        <span class="text-sm text-secondary">Showing <span class="font-medium text-primary">{{ books.count }}</span> books</span>
-    </div>
-</div>
-
-<script>
-    const bulkBar = document.getElementById('bulk-action-bar');
-    const countDisplay = document.getElementById('selected-count');
-    const selectAllCheck = document.getElementById('select-all');
-    
-    function updateBulkAction() {
-        const checks = document.querySelectorAll('.book-checkbox:checked');
-        const count = checks.length;
-        
-        if (count > 0) {
-            bulkBar.classList.remove('hidden');
-            countDisplay.textContent = count + (count === 1 ? ' book selected' : ' books selected');
-        } else {
-            bulkBar.classList.add('hidden');
-            selectAllCheck.checked = false;
-        }
-    }
-    
-    function toggleAll(source) {
-        const checkboxes = document.querySelectorAll('.book-checkbox');
-        checkboxes.forEach(cb => {
-            cb.checked = source.checked;
-        });
-        updateBulkAction();
-    }
-    
-    function deselectAll() {
-        const checkboxes = document.querySelectorAll('.book-checkbox');
-        checkboxes.forEach(cb => cb.checked = false);
-        selectAllCheck.checked = false;
-        updateBulkAction();
-    }
-</script>
-<style>
-    .animate-fade-in {
-        animation: fadeIn 0.2s ease-out forwards;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-5px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
 {% endblock %}
-

@@ -1,113 +1,119 @@
-<aside class="w-64 bg-background border-r border-gray-200 flex flex-col h-full flex-shrink-0">
-    <!-- Logo Area -->
-    <div class="h-16 flex items-center px-6 border-b border-gray-200">
-        <a href="{% url 'dashboard:home' %}" class="flex items-center gap-2 text-primary font-bold text-xl tracking-tight">
-            <span class="text-accent text-2xl">📚</span>
-            {% if branding_organization %}{{ branding_organization.name|truncatechars:18 }}{% else %}LIBRIX{% endif %}
-        </a>
+{% load static %}
+<aside class="sidebar w-[var(--sidebar-width)] h-full fixed top-0 left-0 bg-[var(--color-surface)] border-r border-[var(--color-border)] flex flex-col z-40 transition-all duration-300">
+    <!-- Brand -->
+    <div class="h-[var(--topbar-height)] flex items-center px-6 border-b border-[var(--color-border)]">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-white font-bold shadow-[var(--shadow-glow)]">
+                L
+            </div>
+            <span class="font-bold text-lg tracking-wide sidebar-text">LIBRIX</span>
+        </div>
     </div>
 
-    <!-- Main Navigation -->
-    <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        
-        <a href="{% url 'dashboard:home' %}" class="flex items-center gap-3 px-3 py-2 text-primary bg-surface rounded-lg shadow-soft font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px] text-accent">dashboard</span>
-            Dashboard
-        </a>
-        
-        <a href="{% url 'books:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">auto_stories</span>
-            Books
-        </a>
-        
-        <a href="{% url 'books:categories' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">category</span>
-            Categories
-        </a>
-        
-        {% if request.user.is_staff_member or request.user.is_superuser or request.user.role != 'MEMBER' %}
-        <a href="{% url 'members:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">group</span>
-            Members
-        </a>
-        {% endif %}
+    <!-- Navigation -->
+    <div class="flex-1 overflow-y-auto py-6 px-3">
+        <nav class="space-y-8">
+            
+            <!-- OVERVIEW -->
+            <div>
+                <div class="px-3 mb-2 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider sidebar-text">Overview</div>
+                <div class="space-y-1">
+                    <a href="{% url 'dashboard:home' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.url_name == 'home' and request.resolver_match.app_name == 'dashboard' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                        <span class="text-sm font-medium sidebar-text">Dashboard</span>
+                    </a>
+                </div>
+            </div>
 
-        {% if request.user.is_staff_member or request.user.is_superuser or request.user.role != 'MEMBER' %}
-        <div class="pt-4 pb-1">
-            <p class="px-3 text-xs font-semibold text-muted uppercase tracking-wider">Circulation</p>
-        </div>
-        
-        <a href="{% url 'transactions:issue' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">outbox</span>
-            Issue Book
-        </a>
-        
-        <a href="{% url 'transactions:return' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">move_to_inbox</span>
-            Returns
-        </a>
-        {% endif %}
+            <!-- LIBRARY -->
+            <div>
+                <div class="px-3 mb-2 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider sidebar-text">Library</div>
+                <div class="space-y-1">
+                    <a href="{% url 'books:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'books' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">book</span>
+                        <span class="text-sm font-medium sidebar-text">Books</span>
+                    </a>
+                    <a href="{% url 'reservations:list' %}" class="flex items-center justify-between px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'reservations' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[20px]">bookmark</span>
+                            <span class="text-sm font-medium sidebar-text">Reservations</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
 
-        <a href="{% url 'reservations:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">bookmark</span>
-            Reservations
-        </a>
+            <!-- PEOPLE -->
+            <div>
+                <div class="px-3 mb-2 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider sidebar-text">People</div>
+                <div class="space-y-1">
+                    <a href="{% url 'members:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'members' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">group</span>
+                        <span class="text-sm font-medium sidebar-text">Members</span>
+                    </a>
+                    {% if user.is_superadmin %}
+                    <a href="{% url 'organizations:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'organizations' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">domain</span>
+                        <span class="text-sm font-medium sidebar-text">Organizations</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
 
-        <a href="{% url 'transactions:fines' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">payments</span>
-            Fines
-        </a>
+            <!-- OPERATIONS -->
+            <div>
+                <div class="px-3 mb-2 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider sidebar-text">Operations</div>
+                <div class="space-y-1">
+                    <a href="{% url 'transactions:issue_book' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.url_name == 'issue_book' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">output</span>
+                        <span class="text-sm font-medium sidebar-text">Circulation</span>
+                    </a>
+                    <a href="{% url 'transactions:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'transactions' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">receipt_long</span>
+                        <span class="text-sm font-medium sidebar-text">Transactions</span>
+                    </a>
+                    <a href="{% url 'subscriptions:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'subscriptions' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">card_membership</span>
+                        <span class="text-sm font-medium sidebar-text">Subscriptions</span>
+                    </a>
+                </div>
+            </div>
 
-        {% if request.user.is_superadmin or request.user.role == 'SUPER_ADMIN' or request.user.role == 'ORG_ADMIN' or request.user.is_superuser %}
-        <div class="pt-4 pb-1">
-            <p class="px-3 text-xs font-semibold text-muted uppercase tracking-wider">Administration</p>
-        </div>
+            <!-- SYSTEM -->
+            <div>
+                <div class="px-3 mb-2 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider sidebar-text">System</div>
+                <div class="space-y-1">
+                    <a href="{% url 'reports:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'reports' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">analytics</span>
+                        <span class="text-sm font-medium sidebar-text">Reports</span>
+                    </a>
+                    <a href="{% url 'notifications:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'notifications' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">notifications</span>
+                        <span class="text-sm font-medium sidebar-text">Notifications</span>
+                    </a>
+                    <a href="{% url 'audit:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'audit' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">history</span>
+                        <span class="text-sm font-medium sidebar-text">Audit Log</span>
+                    </a>
+                    <a href="{% url 'dashboard:settings' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.url_name == 'settings' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span class="text-sm font-medium sidebar-text">Settings</span>
+                    </a>
+                </div>
+            </div>
 
-        {% if request.user.is_superadmin %}
-        <a href="{% url 'organizations:platform' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">hub</span>
-            Platform
-        </a>
-        <a href="{% url 'organizations:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">apartment</span>
-            Organizations
-        </a>
-        {% endif %}
-
-        {% if request.user.is_org_admin %}
-        <a href="{% url 'organizations:branches' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">domain</span>
-            Branches
-        </a>
-        {% endif %}
-
-        <a href="{% url 'reports:index' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">bar_chart</span>
-            Reports
-        </a>
-        <a href="{% url 'audit:list' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">policy</span>
-            Audit Logs
-        </a>
-        {% endif %}
-        
+        </nav>
     </div>
 
-    <!-- Bottom Navigation -->
-    <div class="p-4 border-t border-gray-200 space-y-1">
-        {% if request.user.is_superadmin or request.user.role == 'SUPER_ADMIN' or request.user.role == 'ORG_ADMIN' or request.user.is_superuser %}
-        <a href="{% url 'dashboard:settings' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">settings</span>
-            Settings
-        </a>
-        {% endif %}
-        <a href="{% url 'dashboard:help_center' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary hover:bg-surface rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">help</span>
-            Help Center
-        </a>
-        <a href="{% url 'accounts:logout' %}" class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-red-600 hover:bg-red-50 rounded-lg font-medium text-sm transition-colors">
-            <span class="material-symbols-outlined text-[20px]">logout</span>
-            Logout
+    <!-- User Mini Profile -->
+    <div class="p-4 border-t border-[var(--color-border)]">
+        <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 hover:bg-[var(--color-surface-hover)] p-2 rounded-lg transition-colors cursor-pointer">
+            <div class="w-9 h-9 rounded-full bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-primary)]">
+                <span class="material-symbols-outlined text-lg">person</span>
+            </div>
+            <div class="flex-1 min-w-0 sidebar-text">
+                <div class="text-sm font-medium truncate">{{ user.get_full_name|default:user.username }}</div>
+                <div class="text-xs text-[var(--color-muted)] truncate">{{ user.role }}</div>
+            </div>
         </a>
     </div>
 </aside>

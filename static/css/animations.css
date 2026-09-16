@@ -1,0 +1,103 @@
+/* Premium Motion & Animations */
+
+/* Page Reveal */
+@keyframes pageReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered Card Reveal */
+.stagger-1 { animation: pageReveal 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both; }
+.stagger-2 { animation: pageReveal 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both; }
+.stagger-3 { animation: pageReveal 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both; }
+.stagger-4 { animation: pageReveal 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s both; }
+.stagger-5 { animation: pageReveal 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both; }
+
+/* Modal Entrance */
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-animate-in {
+  animation: modalScaleIn var(--transition-normal) forwards;
+}
+
+/* Dropdown Entrance */
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.dropdown-animate-in {
+  animation: dropdownFadeIn var(--transition-fast) forwards;
+  transform-origin: top center;
+}
+
+/* Scanner Animation */
+@keyframes scanLine {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.scanner-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: var(--color-primary);
+  box-shadow: 0 0 10px var(--color-primary);
+  animation: scanLine 2s infinite linear;
+}
+
+/* Toast Entrance */
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

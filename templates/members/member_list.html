@@ -2,281 +2,135 @@
 {% block title %}Members - LIBRIX{% endblock %}
 
 {% block content %}
-<!-- Page Header -->
-<div class="flex justify-between items-center mb-8">
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 stagger-1">
     <div>
-        <h1 class="text-3xl font-bold text-primary tracking-tight">Members</h1>
-        <p class="text-secondary mt-1">Manage library members and patron directory.</p>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Members</h1>
+        <p class="text-[var(--color-muted)]">Manage library members, statuses, and accounts.</p>
     </div>
-    <button onclick="document.getElementById('createMemberModal').classList.remove('hidden')"
-        class="bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-soft flex items-center gap-2">
+    
+    {% if request.user.is_staff_member %}
+    <button class="btn btn-primary" onclick="document.getElementById('add-member-modal').classList.remove('hidden')">
         <span class="material-symbols-outlined text-[20px]">person_add</span>
-        Add Member
+        Add New Member
     </button>
+    {% endif %}
 </div>
 
-<!-- Stats Row -->
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="material-symbols-outlined text-secondary text-[20px]">group</span>
-            <span class="text-sm font-medium text-secondary">Total Members</span>
+<!-- Filters -->
+<div class="glass-panel p-4 mb-8 flex flex-wrap gap-4 items-end stagger-2">
+    <div class="flex-1 min-w-[240px]">
+        <label class="input-label mb-1 block">Search Members</label>
+        <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-[18px]">search</span>
+            <input type="text" placeholder="Name, email, or member ID..." class="input-field pl-10 w-full">
         </div>
-        <p class="text-3xl font-bold text-primary">{{ total_count }}</p>
     </div>
-    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="material-symbols-outlined text-secondary text-[20px]">how_to_reg</span>
-            <span class="text-sm font-medium text-secondary">Active Members</span>
-        </div>
-        <p class="text-3xl font-bold text-primary">{{ active_count }}</p>
-    </div>
-    <div class="bg-surface border border-gray-200 rounded-xl p-5 shadow-soft">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="material-symbols-outlined text-secondary text-[20px]">warning</span>
-            <span class="text-sm font-medium text-secondary">Suspended</span>
-        </div>
-        <p class="text-3xl font-bold text-primary">{{ suspended_count }}</p>
+    
+    <div class="w-full sm:w-auto min-w-[150px]">
+        <label class="input-label mb-1 block">Status</label>
+        <select class="input-field cursor-pointer">
+            <option value="">All Statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="SUSPENDED">Suspended</option>
+            <option value="INACTIVE">Inactive</option>
+        </select>
     </div>
 </div>
 
-<!-- Search Bar -->
-<form method="GET" class="bg-surface border border-gray-200 rounded-xl p-4 shadow-soft mb-6">
-    <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-secondary">search</span>
-        <input type="text" name="q" value="{{ current_q }}" placeholder="Search by name, email, or Member ID..."
-            class="w-full pl-10 pr-4 py-2.5 bg-background border border-gray-200 rounded-lg text-sm text-primary focus:outline-none focus:ring-1 focus:ring-accent placeholder:text-muted">
-    </div>
-</form>
-
-<!-- Members Table -->
-<div class="bg-surface border border-gray-200 rounded-xl shadow-soft overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+<!-- Member List -->
+<div class="glass-panel stagger-3">
+    <div class="table-container">
+        <table class="premium-table">
             <thead>
-                <tr class="border-b border-gray-200 bg-background text-xs font-semibold text-muted uppercase tracking-wider">
-                    <th class="px-4 py-3">Member</th>
-                    <th class="px-4 py-3">Member ID</th>
-                    <th class="px-4 py-3">Email</th>
-                    <th class="px-4 py-3">Status</th>
-                    <th class="px-4 py-3">Joined</th>
-                    <th class="px-4 py-3 text-right">Actions</th>
+                <tr>
+                    <th>Member Info</th>
+                    <th>ID</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th class="text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody>
                 {% for member in members %}
-                <tr class="hover:bg-gray-50 transition-colors group">
-                    <td class="px-4 py-4">
+                <tr class="group cursor-pointer hover:bg-[var(--color-surface-hover)] transition-colors" onclick="window.location='{% url 'members:detail' member.pk %}'">
+                    <td>
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center font-bold text-sm shrink-0">
-                                {{ member.user.username|first|upper }}
+                            <div class="w-10 h-10 rounded-full bg-[var(--color-primary-transparent)] text-[var(--color-primary)] flex items-center justify-center font-bold text-sm">
+                                {{ member.first_name|first|default:member.username|first }}
                             </div>
                             <div>
-                                <p class="font-medium text-primary text-sm">{{ member.user.get_full_name|default:member.user.username }}</p>
-                                <p class="text-xs text-muted">{{ member.user.phone_number|default:"" }}</p>
+                                <div class="font-medium text-[var(--color-text)]">{{ member.get_full_name|default:member.username }}</div>
+                                <div class="text-xs text-[var(--color-muted)]">{{ member.email }}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="px-4 py-4 text-sm text-secondary font-mono">{{ member.member_id|default:"—" }}</td>
-                    <td class="px-4 py-4 text-sm text-secondary">{{ member.user.email }}</td>
-                    <td class="px-4 py-4">
+                    <td class="font-mono text-sm text-[var(--color-muted)]">{{ member.member_profile.member_id|default:"-" }}</td>
+                    <td>
                         {% if member.status == 'ACTIVE' %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                            <span class="badge badge-success">Active</span>
                         {% elif member.status == 'SUSPENDED' %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Suspended</span>
+                            <span class="badge badge-danger">Suspended</span>
                         {% else %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ member.status|default:"Inactive" }}</span>
+                            <span class="badge badge-info">{{ member.status|default:"Unknown" }}</span>
                         {% endif %}
                     </td>
-                    <td class="px-4 py-4 text-sm text-secondary">{{ member.membership_date|date:"M d, Y"|default:"—" }}</td>
-                    <td class="px-4 py-4 text-right">
-                        <div class="flex items-center justify-end gap-1">
-                            <!-- View Profile -->
-                            <a href="{% url 'members:detail' member.pk %}" 
-                               class="p-1.5 text-secondary hover:text-accent hover:bg-green-50 rounded-lg transition-colors" title="View Profile">
-                                <span class="material-symbols-outlined text-[18px]">visibility</span>
-                            </a>
-                            <!-- Edit -->
-                            <button onclick="openEditModal({{ member.pk }}, '{{ member.user.first_name }}', '{{ member.user.last_name }}', '{{ member.user.email }}', '{{ member.member_id|default:'' }}', '{{ member.status }}')"
-                                class="p-1.5 text-secondary hover:text-accent hover:bg-green-50 rounded-lg transition-colors" title="Edit">
-                                <span class="material-symbols-outlined text-[18px]">edit</span>
-                            </button>
-                            <!-- Delete -->
-                            <button onclick="openDeleteModal({{ member.pk }}, '{{ member.user.get_full_name|default:member.user.username }}')"
-                                class="p-1.5 text-secondary hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
-                                <span class="material-symbols-outlined text-[18px]">delete</span>
-                            </button>
-                        </div>
+                    <td class="text-sm text-[var(--color-muted)]">{{ member.date_joined|date:"M d, Y" }}</td>
+                    <td class="text-right">
+                        <a href="{% url 'members:detail' member.pk %}" class="btn btn-ghost w-8 h-8 p-0" onclick="event.stopPropagation()">
+                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="px-4 py-16 text-center">
-                        <span class="material-symbols-outlined text-5xl text-muted block mb-3">group</span>
-                        <p class="text-secondary font-medium">No members yet.</p>
-                        <p class="text-muted text-sm mt-1">Click <strong class="text-accent">Add Member</strong> above to register your first member.</p>
+                    <td colspan="5">
+                        <div class="py-12 flex flex-col items-center justify-center text-center">
+                            <span class="material-symbols-outlined text-4xl text-[var(--color-muted)] mb-3">group_off</span>
+                            <p class="text-sm text-[var(--color-muted)]">No members found.</p>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    <div class="px-4 py-3 border-t border-gray-200 bg-background">
-        <span class="text-sm text-secondary">Showing <span class="font-medium text-primary">{{ members.count }}</span> members</span>
-    </div>
 </div>
 
-
-<!-- ===== ADD MEMBER MODAL ===== -->
-<div id="createMemberModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-    <div class="bg-surface rounded-xl border border-gray-200 shadow-xl w-full max-w-lg">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-primary">Register New Member</h2>
-            <button onclick="document.getElementById('createMemberModal').classList.add('hidden')"
-                class="p-1 rounded-lg text-secondary hover:text-primary hover:bg-gray-100 transition-colors">
-                <span class="material-symbols-outlined text-[20px]">close</span>
-            </button>
+<!-- Add Member Modal -->
+<div id="add-member-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm p-4 flex">
+    <div class="glass-panel w-full max-w-lg bg-[var(--color-bg)] modal-animate-in relative">
+        <button onclick="document.getElementById('add-member-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--color-muted)] hover:text-[var(--color-text)]">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        
+        <div class="p-6 border-b border-[var(--color-border)]">
+            <h2 class="text-xl font-semibold">Add New Member</h2>
         </div>
+        
         <form method="POST" action="{% url 'members:create' %}" class="p-6 space-y-4">
             {% csrf_token %}
+            <!-- Assuming simple fields based on generic member creation -->
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-primary mb-1.5">First Name <span class="text-red-500">*</span></label>
-                    <input type="text" name="first_name" required placeholder="John"
-                        class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
+                <div class="input-group">
+                    <label class="input-label">First Name</label>
+                    <input type="text" name="first_name" class="input-field" required>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-primary mb-1.5">Last Name <span class="text-red-500">*</span></label>
-                    <input type="text" name="last_name" required placeholder="Doe"
-                        class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
+                <div class="input-group">
+                    <label class="input-label">Last Name</label>
+                    <input type="text" name="last_name" class="input-field" required>
                 </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-primary mb-1.5">Username <span class="text-red-500">*</span></label>
-                <input type="text" name="username" required placeholder="johndoe"
-                    class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
+            
+            <div class="input-group">
+                <label class="input-label">Email Address</label>
+                <input type="email" name="email" class="input-field" required>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-primary mb-1.5">Email Address <span class="text-red-500">*</span></label>
-                <input type="email" name="email" required placeholder="john@example.com"
-                    class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-primary mb-1.5">Member ID <span class="text-red-500">*</span></label>
-                <input type="text" name="member_id" required placeholder="e.g. MEM-2024-001"
-                    class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
-            </div>
-            <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-                <button type="button" onclick="document.getElementById('createMemberModal').classList.add('hidden')"
-                    class="px-4 py-2 text-sm font-medium text-secondary hover:text-primary transition-colors">Cancel</button>
-                <button type="submit"
-                    class="px-5 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-colors shadow-soft">
-                    Register Member
-                </button>
+            
+            <div class="pt-4 border-t border-[var(--color-border)] flex justify-end gap-3">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-member-modal').classList.add('hidden')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Member</button>
             </div>
         </form>
     </div>
 </div>
-
-
-<!-- ===== EDIT MEMBER MODAL ===== -->
-<div id="editMemberModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-    <div class="bg-surface rounded-xl border border-gray-200 shadow-xl w-full max-w-lg">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-primary">Edit Member</h2>
-            <button onclick="document.getElementById('editMemberModal').classList.add('hidden')"
-                class="p-1 rounded-lg text-secondary hover:text-primary hover:bg-gray-100 transition-colors">
-                <span class="material-symbols-outlined text-[20px]">close</span>
-            </button>
-        </div>
-        <form method="POST" id="editMemberForm" action="" class="p-6 space-y-4">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="edit_member">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-primary mb-1.5">First Name</label>
-                    <input type="text" name="first_name" id="edit_first_name" required
-                        class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-primary mb-1.5">Last Name</label>
-                    <input type="text" name="last_name" id="edit_last_name" required
-                        class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
-                </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-primary mb-1.5">Email Address</label>
-                <input type="email" name="email" id="edit_email" required
-                    class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-primary mb-1.5">Member ID</label>
-                <input type="text" name="member_id" id="edit_member_id"
-                    class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-primary mb-1.5">Status</label>
-                <select name="status" id="edit_status"
-                    class="w-full bg-background border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent">
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Inactive</option>
-                    <option value="SUSPENDED">Suspended</option>
-                </select>
-            </div>
-            <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-                <button type="button" onclick="document.getElementById('editMemberModal').classList.add('hidden')"
-                    class="px-4 py-2 text-sm font-medium text-secondary hover:text-primary transition-colors">Cancel</button>
-                <button type="submit"
-                    class="px-5 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-colors shadow-soft">
-                    Save Changes
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-
-<!-- ===== DELETE CONFIRM MODAL ===== -->
-<div id="deleteMemberModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-    <div class="bg-surface rounded-xl border border-red-200 shadow-xl w-full max-w-md text-center p-8">
-        <div class="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span class="material-symbols-outlined text-3xl">warning</span>
-        </div>
-        <h2 class="text-xl font-bold text-primary mb-2">Delete Member</h2>
-        <p class="text-secondary mb-6">Are you sure you want to delete <span id="delete_member_name" class="font-bold text-primary"></span>? This will permanently remove their account and membership.</p>
-        <form method="POST" id="deleteMemberForm" action="">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="delete_member">
-            <div class="flex items-center justify-center gap-4">
-                <button type="button" onclick="document.getElementById('deleteMemberModal').classList.add('hidden')"
-                    class="px-6 py-2.5 bg-background border border-gray-200 text-secondary font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                    Cancel
-                </button>
-                <button type="submit"
-                    class="px-6 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-soft">
-                    Yes, Delete
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-
-<script>
-function openEditModal(pk, firstName, lastName, email, memberId, status) {
-    document.getElementById('edit_first_name').value = firstName;
-    document.getElementById('edit_last_name').value = lastName;
-    document.getElementById('edit_email').value = email;
-    document.getElementById('edit_member_id').value = memberId;
-    document.getElementById('edit_status').value = status;
-    document.getElementById('editMemberForm').action = '/members/' + pk + '/edit/';
-    document.getElementById('editMemberModal').classList.remove('hidden');
-}
-
-function openDeleteModal(pk, name) {
-    document.getElementById('delete_member_name').textContent = '"' + name + '"';
-    document.getElementById('deleteMemberForm').action = '/members/' + pk + '/delete/';
-    document.getElementById('deleteMemberModal').classList.remove('hidden');
-}
-</script>
 {% endblock %}

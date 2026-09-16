@@ -1,158 +1,219 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
-{% block title %}Dashboard - LIBRIX{% endblock %}
+{% block title %}Command Center - LIBRIX{% endblock %}
 
 {% block content %}
 <!-- Page Header -->
-<div class="mb-8">
-    <h1 class="text-3xl font-bold text-primary tracking-tight">Dashboard</h1>
-    <p class="text-secondary mt-1">Welcome back, {{ request.user.first_name|default:"Administrator" }}.</p>
-</div>
-
-<!-- KPI Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Card 1 -->
-    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="material-symbols-outlined text-secondary text-[20px]">auto_stories</span>
-            <span class="text-sm font-medium text-secondary">Total Books</span>
+<div class="mb-10 stagger-1">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight mb-2">Good evening.</h1>
+            <p class="text-[var(--color-muted)]">Here's what's happening across your library today.</p>
         </div>
-        <p class="text-3xl font-bold text-primary">{{ total_books }}</p>
-    </div>
-
-    <!-- Card 2 -->
-    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="material-symbols-outlined text-secondary text-[20px]">group</span>
-            <span class="text-sm font-medium text-secondary">Active Members</span>
-        </div>
-        <p class="text-3xl font-bold text-primary">{{ total_members }}</p>
-    </div>
-
-    <!-- Card 3 -->
-    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="material-symbols-outlined text-secondary text-[20px]">bookmark_added</span>
-            <span class="text-sm font-medium text-secondary">Books Issued</span>
-        </div>
-        <p class="text-3xl font-bold text-primary">{{ books_issued }}</p>
-    </div>
-
-    <!-- Card 4 -->
-    <div class="bg-surface rounded-xl border border-gray-200 p-5 shadow-soft">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="material-symbols-outlined text-secondary text-[20px]">warning</span>
-            <span class="text-sm font-medium text-secondary">Overdue Books</span>
-        </div>
-        <p class="text-3xl font-bold text-primary">{{ overdue_books }}</p>
-    </div>
-</div>
-
-{% if branches %}
-<form method="get" class="mb-6">
-    <label class="text-sm text-secondary mr-2">Branch</label>
-    <select name="branch" onchange="this.form.submit()" class="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
-        <option value="">All branches</option>
-        {% for branch in branches %}
-        <option value="{{ branch.pk }}" {% if selected_branch and selected_branch.pk == branch.pk %}selected{% endif %}>{{ branch.name }} ({{ branch.code }})</option>
-        {% endfor %}
-    </select>
-</form>
-{% endif %}
-
-<!-- Activity & Popular Section -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Left: Timeline -->
-    <div class="lg:col-span-2 space-y-4">
-        <h2 class="text-lg font-semibold text-primary">Recent Library Activity</h2>
         
-        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+        {% if branches %}
+        <form method="get" class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-[var(--color-muted)] text-[18px]">domain</span>
+            <div class="relative">
+                <select name="branch" onchange="this.form.submit()" class="input-field appearance-none pr-10 bg-transparent py-1.5 text-sm cursor-pointer">
+                    <option value="">All Branches</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.pk }}" {% if selected_branch and selected_branch.pk == branch.pk %}selected{% endif %}>{{ branch.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-muted)] pointer-events-none text-[18px]">unfold_more</span>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- KPI Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    
+    <!-- Total Books -->
+    <div class="glass-panel p-6 stagger-2 relative overflow-hidden group">
+        <div class="spotlight"></div>
+        <div class="flex justify-between items-start mb-4">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-primary-transparent)] flex items-center justify-center text-[var(--color-primary)]">
+                <span class="material-symbols-outlined text-[20px]">library_books</span>
+            </div>
+            <span class="badge badge-info text-[10px]">TOTAL</span>
+        </div>
+        <div class="space-y-1">
+            <h3 class="text-[var(--color-muted)] text-sm font-medium uppercase tracking-wider">Total Books</h3>
+            <div class="text-3xl font-bold text-[var(--color-text)]">{{ total_books|default:"0" }}</div>
+        </div>
+        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+            <span class="material-symbols-outlined text-9xl">library_books</span>
+        </div>
+    </div>
+
+    <!-- Active Members -->
+    <div class="glass-panel p-6 stagger-3 relative overflow-hidden group">
+        <div class="spotlight"></div>
+        <div class="flex justify-between items-start mb-4">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-success-bg)] flex items-center justify-center text-[var(--color-success)]">
+                <span class="material-symbols-outlined text-[20px]">groups</span>
+            </div>
+            <span class="badge badge-success text-[10px]">ACTIVE</span>
+        </div>
+        <div class="space-y-1">
+            <h3 class="text-[var(--color-muted)] text-sm font-medium uppercase tracking-wider">Active Members</h3>
+            <div class="text-3xl font-bold text-[var(--color-text)]">{{ total_members|default:"0" }}</div>
+        </div>
+        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+            <span class="material-symbols-outlined text-9xl">groups</span>
+        </div>
+    </div>
+
+    <!-- Books Issued -->
+    <div class="glass-panel p-6 stagger-4 relative overflow-hidden group">
+        <div class="spotlight"></div>
+        <div class="flex justify-between items-start mb-4">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-warning-bg)] flex items-center justify-center text-[var(--color-warning)]">
+                <span class="material-symbols-outlined text-[20px]">menu_book</span>
+            </div>
+            <span class="badge badge-warning text-[10px]">ON LOAN</span>
+        </div>
+        <div class="space-y-1">
+            <h3 class="text-[var(--color-muted)] text-sm font-medium uppercase tracking-wider">Active Loans</h3>
+            <div class="text-3xl font-bold text-[var(--color-text)]">{{ books_issued|default:"0" }}</div>
+        </div>
+        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+            <span class="material-symbols-outlined text-9xl">menu_book</span>
+        </div>
+    </div>
+
+    <!-- Overdue / Alerts -->
+    <div class="glass-panel p-6 stagger-5 relative overflow-hidden group">
+        <div class="spotlight"></div>
+        <div class="flex justify-between items-start mb-4">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-danger-bg)] flex items-center justify-center text-[var(--color-danger)]">
+                <span class="material-symbols-outlined text-[20px]">warning</span>
+            </div>
+            <span class="badge badge-danger text-[10px]">ACTION REQ</span>
+        </div>
+        <div class="space-y-1">
+            <h3 class="text-[var(--color-muted)] text-sm font-medium uppercase tracking-wider">Overdue Books</h3>
+            <div class="text-3xl font-bold text-[var(--color-text)]">{{ overdue_books|default:"0" }}</div>
+        </div>
+        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+            <span class="material-symbols-outlined text-9xl">warning</span>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 stagger-5">
+    <div class="glass-panel p-5 flex items-center justify-between group cursor-pointer hover:bg-[var(--color-surface-hover)]">
+        <div>
+            <div class="text-sm font-medium text-[var(--color-muted)] mb-1">Due Soon (3 Days)</div>
+            <div class="text-2xl font-semibold">{{ due_soon_count|default:"0" }}</div>
+        </div>
+        <div class="w-12 h-12 rounded-full border border-[var(--color-border)] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[var(--color-info)]">schedule</span>
+        </div>
+    </div>
+    
+    <div class="glass-panel p-5 flex items-center justify-between group cursor-pointer hover:bg-[var(--color-surface-hover)]">
+        <div>
+            <div class="text-sm font-medium text-[var(--color-muted)] mb-1">Pending Fines</div>
+            <div class="text-2xl font-semibold">${{ pending_fines|floatformat:2|default:"0.00" }}</div>
+        </div>
+        <div class="w-12 h-12 rounded-full border border-[var(--color-border)] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[var(--color-danger)]">payments</span>
+        </div>
+    </div>
+    
+    <div class="glass-panel p-5 flex items-center justify-between group cursor-pointer hover:bg-[var(--color-surface-hover)]">
+        <div>
+            <div class="text-sm font-medium text-[var(--color-muted)] mb-1">Active Reservations</div>
+            <div class="text-2xl font-semibold">{{ reservation_count|default:"0" }}</div>
+        </div>
+        <div class="w-12 h-12 rounded-full border border-[var(--color-border)] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[var(--color-primary)]">bookmark</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+    
+    <!-- Recent Activity Timeline (Col Span 2) -->
+    <div class="xl:col-span-2 space-y-4 stagger-5">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold tracking-tight">Circulation Activity</h2>
+            <a href="{% url 'transactions:list' %}" class="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] flex items-center gap-1">
+                View All <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </a>
+        </div>
+        
+        <div class="glass-panel">
             <div class="p-6">
-                <div class="relative border-l border-gray-200 ml-3 space-y-8">
-                    
+                {% if recent_transactions %}
+                <div class="relative border-l border-[var(--color-border)] ml-3 space-y-8">
                     {% for txn in recent_transactions %}
                     <div class="relative pl-6">
-                        <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-accent ring-4 ring-white"></span>
-                        <div class="flex items-start justify-between">
+                        <span class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--color-primary)] ring-4 ring-[var(--color-surface)]"></span>
+                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                             <div>
-                                <p class="text-sm text-primary font-medium">📘 <span class="font-semibold">{{ txn.book.title }}</span> issued to {{ txn.member.get_full_name|default:txn.member.username }}</p>
-                                <p class="text-xs text-secondary mt-0.5">{{ txn.issue_date }}</p>
+                                <p class="text-sm font-medium text-[var(--color-text)]">
+                                    Book <span class="font-semibold text-[var(--color-primary)]">{{ txn.book.title }}</span> was issued to <span class="font-semibold">{{ txn.member.get_full_name|default:txn.member.username }}</span>
+                                </p>
+                                <p class="text-xs text-[var(--color-muted)] mt-1 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                    {{ txn.issue_date|date:"M d, Y h:i A" }}
+                                </p>
                             </div>
+                            <span class="badge badge-warning text-[10px] shrink-0">{{ txn.get_status_display|default:"ISSUED" }}</span>
                         </div>
-                    </div>
-                    {% empty %}
-                    <div class="relative pl-6">
-                        <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-gray-300 ring-4 ring-white"></span>
-                        <p class="text-sm text-secondary">No recent activity.</p>
                     </div>
                     {% endfor %}
-                    
-                    <!-- Dummy static activities for demo visual parity -->
-                    <div class="relative pl-6">
-                        <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-gray-300 ring-4 ring-white"></span>
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <p class="text-sm text-primary font-medium">✅ <span class="font-semibold">The Great Gatsby</span> returned by John Doe</p>
-                                <p class="text-xs text-secondary mt-0.5">2 hours ago</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="relative pl-6">
-                        <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-gray-300 ring-4 ring-white"></span>
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <p class="text-sm text-primary font-medium">👤 New member <span class="font-semibold">Sarah Jenkins</span> registered</p>
-                                <p class="text-xs text-secondary mt-0.5">5 hours ago</p>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
+                {% else %}
+                <div class="py-12 flex flex-col items-center justify-center text-center">
+                    <span class="material-symbols-outlined text-[48px] text-[var(--color-muted)] mb-3">history_toggle_off</span>
+                    <h3 class="text-lg font-medium text-[var(--color-text)] mb-1">No Recent Activity</h3>
+                    <p class="text-sm text-[var(--color-muted)]">There are no recent circulation transactions to display.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Right: Popular Books -->
-    <div class="space-y-4">
-        <h2 class="text-lg font-semibold text-primary">Popular Books</h2>
+    <!-- Right Column: Popular Categories -->
+    <div class="space-y-4 stagger-5">
+        <h2 class="text-lg font-semibold tracking-tight">Popular Categories</h2>
         
-        <div class="bg-surface rounded-xl border border-gray-200 shadow-soft p-4 space-y-4">
-            
-            <div class="flex gap-4 items-center">
-                <div class="w-12 h-16 bg-gray-100 rounded flex items-center justify-center border border-gray-200">
-                    <span class="material-symbols-outlined text-gray-400">book</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-primary truncate">Atomic Habits</p>
-                    <p class="text-xs text-secondary truncate">James Clear</p>
-                    <p class="text-xs font-medium text-accent mt-1">1,240 Issues</p>
-                </div>
+        <div class="glass-panel">
+            <div class="p-4 space-y-1">
+                {% if categories %}
+                    {% for cat in categories %}
+                    <div class="flex gap-4 items-center p-3 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer group">
+                        <div class="w-10 h-10 rounded bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-muted)] group-hover:border-[var(--color-primary)] group-hover:text-[var(--color-primary)] transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">category</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-[var(--color-text)] truncate">{{ cat.name }}</p>
+                            <p class="text-xs text-[var(--color-muted)] truncate mt-0.5">
+                                {% if cat.book_count == 1 %}1 Book{% else %}{{ cat.book_count|default:"0" }} Books{% endif %}
+                            </p>
+                        </div>
+                        <div class="text-[var(--color-muted)] group-hover:text-[var(--color-primary)] transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="py-8 flex flex-col items-center justify-center text-center">
+                        <span class="material-symbols-outlined text-[32px] text-[var(--color-muted)] mb-2">auto_awesome_mosaic</span>
+                        <p class="text-sm text-[var(--color-muted)]">No category data available.</p>
+                    </div>
+                {% endif %}
             </div>
-
-            <div class="flex gap-4 items-center">
-                <div class="w-12 h-16 bg-gray-100 rounded flex items-center justify-center border border-gray-200">
-                    <span class="material-symbols-outlined text-gray-400">book</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-primary truncate">Deep Work</p>
-                    <p class="text-xs text-secondary truncate">Cal Newport</p>
-                    <p class="text-xs font-medium text-accent mt-1">980 Issues</p>
-                </div>
-            </div>
-
-            <div class="flex gap-4 items-center">
-                <div class="w-12 h-16 bg-gray-100 rounded flex items-center justify-center border border-gray-200">
-                    <span class="material-symbols-outlined text-gray-400">book</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-primary truncate">The Design of Everyday Things</p>
-                    <p class="text-xs text-secondary truncate">Don Norman</p>
-                    <p class="text-xs font-medium text-accent mt-1">850 Issues</p>
-                </div>
-            </div>
-
         </div>
     </div>
+    
 </div>
 {% endblock %}
