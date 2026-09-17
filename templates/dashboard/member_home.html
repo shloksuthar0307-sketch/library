@@ -25,7 +25,7 @@
         <div class="space-y-4 stagger-2">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold tracking-tight">Active Loans</h2>
-                <a href="{% url 'transactions:list' %}" class="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]">View History</a>
+                <a href="{% url 'transactions:history' %}" class="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]">View History</a>
             </div>
             
             {% if active_loans %}
@@ -140,7 +140,7 @@
                     <span class="text-[var(--color-text)] font-semibold">{{ books_issued }} / {{ request.user.member_profile.max_book_limit|default:"8" }}</span>
                 </div>
                 <div class="w-full bg-[var(--color-surface-2)] h-1.5 rounded-full overflow-hidden">
-                    <div class="bg-[var(--color-primary)] h-full rounded-full" style="width: {% widthratio books_issued request.user.member_profile.max_book_limit|default:8 100 %}%"></div>
+                    <div class="bg-[var(--color-primary)] h-full rounded-full" style="width: {% widthratio books_issued request.user.member_profile.max_book_limit|default:8 100%} %"></div>
                 </div>
             </div>
         </div>

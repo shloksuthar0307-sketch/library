@@ -1,676 +1,670 @@
 {% extends "base.html" %}
-{% block title %}Analytics & Reports - SmartLibrary{% endblock %}
+{% block title %}Analytics & Reports - LIBRIX
+<!-- Scheduled Reports Table -->
+<div class="glass-panel p-6 stagger-5">
+    <h3 class="font-semibold text-lg mb-4">Scheduled Reports</h3>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+            <thead class="text-xs text-[var(--color-muted)] border-b border-[var(--color-border)]">
+                <tr>
+                    <th class="pb-3 font-medium">Report</th>
+                    <th class="pb-3 font-medium">Type</th>
+                    <th class="pb-3 font-medium">Frequency</th>
+                    <th class="pb-3 font-medium">Next Run</th>
+                    <th class="pb-3 font-medium">Status</th>
+                    <th class="pb-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--color-border)]">
+                {% for schedule in scheduled_reports %}
+                <tr class="hover:bg-[var(--color-surface-hover)] transition-colors">
+                    <td class="py-3 font-medium">{{ schedule.name }}</td>
+                    <td class="py-3 text-[var(--color-muted)]">{{ schedule.get_report_type_display }}</td>
+                    <td class="py-3 text-[var(--color-muted)]">{{ schedule.get_frequency_display }}</td>
+                    <td class="py-3 text-[var(--color-muted)]">{{ schedule.next_run_at|default:"Pending" }}</td>
+                    <td class="py-3">
+                        {% if schedule.is_active %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge" style="background:var(--color-surface-2)">Paused</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-3 text-right">
+                        <button onclick="runSchedule({{ schedule.id }})" class="text-[var(--color-primary)] hover:underline mr-3">Run Now</button>
+                        <button onclick="toggleSchedule({{ schedule.id }})" class="text-[var(--color-muted)] hover:text-white mr-3">{% if schedule.is_active %}Pause{% else %}Resume{% endif %}</button>
+                        <button onclick="deleteSchedule({{ schedule.id }})" class="text-red-500 hover:underline">Delete</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="py-8 text-center text-[var(--color-muted)]">No scheduled reports found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ======================= MODALS ======================= -->
+
+<!-- Export Modal -->
+<div id="exportModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+    <div class="glass-panel w-full max-w-md p-6 relative">
+        <button onclick="document.getElementById('exportModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--color-muted)] hover:text-white">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h3 class="text-xl font-bold mb-4">Export Report</h3>
+        <form method="GET" action="{% url 'reports:export' %}" class="space-y-4">
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Data Source</label>
+                <select name="source" class="input-field w-full text-sm">
+                    <option value="transactions">Circulation & Transactions</option>
+                    <option value="books">Books Inventory</option>
+                    <option value="members">Members List</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Date Range</label>
+                <select name="date_range" class="input-field w-full text-sm">
+                    <option value="7">Last 7 Days</option>
+                    <option value="30">Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                    <option value="365">Last 365 Days</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Format</label>
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="format" value="CSV" checked class="text-[var(--color-primary)]"> <span class="text-sm">CSV Spreadsheet</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="format" value="PDF" class="text-[var(--color-primary)]"> <span class="text-sm">PDF Document</span>
+                    </label>
+                </div>
+            </div>
+            <button type="submit" onclick="window.Toast.show('Generating export...', 'info')" class="btn btn-primary w-full mt-4">Download Export</button>
+        </form>
+    </div>
+</div>
+
+<!-- Schedule Modal -->
+<div id="scheduleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+    <div class="glass-panel w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
+        <button onclick="document.getElementById('scheduleModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--color-muted)] hover:text-white">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h3 class="text-xl font-bold mb-4">Schedule Digest</h3>
+        <form id="scheduleForm" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Report Name</label>
+                <input type="text" name="name" required placeholder="e.g. Weekly Circulation Summary" class="input-field w-full text-sm">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Frequency</label>
+                    <select name="frequency" class="input-field w-full text-sm">
+                        <option value="DAILY">Daily</option>
+                        <option value="WEEKLY">Weekly</option>
+                        <option value="MONTHLY">Monthly</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Format</label>
+                    <select name="format" class="input-field w-full text-sm">
+                        <option value="CSV">CSV</option>
+                        <option value="PDF">PDF</option>
+                        <option value="BOTH">CSV + PDF</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Recipients (Emails)</label>
+                <input type="text" name="recipients" required placeholder="admin@library.com, staff@library.com" class="input-field w-full text-sm">
+            </div>
+            <button type="submit" class="btn btn-primary w-full mt-4">Save Schedule</button>
+        </form>
+    </div>
+</div>
+
+<!-- Custom Report Modal -->
+<div id="customReportModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+    <div class="glass-panel w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto">
+        <button onclick="document.getElementById('customReportModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--color-muted)] hover:text-white">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h3 class="text-xl font-bold mb-4">Custom Report Builder</h3>
+        
+        <!-- Step 1 -->
+        <div id="cr-step-1">
+            <h4 class="font-medium text-[var(--color-primary)] mb-3">Step 1: Data Source</h4>
+            <select id="cr-source" class="input-field w-full text-sm mb-6">
+                <option value="transactions">Loans & Returns</option>
+                <option value="books">Books Inventory</option>
+                <option value="members">Members</option>
+            </select>
+            <div class="flex justify-end">
+                <button type="button" onclick="document.getElementById('cr-step-1').classList.add('hidden'); document.getElementById('cr-step-2').classList.remove('hidden')" class="btn btn-primary">Next: Filters</button>
+            </div>
+        </div>
+        
+        <!-- Step 2 -->
+        <div id="cr-step-2" class="hidden">
+            <h4 class="font-medium text-[var(--color-primary)] mb-3">Step 2: Filters & Sorting</h4>
+            <div class="mb-4">
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Filter by Status</label>
+                <select id="cr-status" class="input-field w-full text-sm">
+                    <option value="ALL">All Statuses</option>
+                    <option value="ISSUED">Issued / Active</option>
+                    <option value="RETURNED">Returned</option>
+                    <option value="OVERDUE">Overdue</option>
+                </select>
+            </div>
+            <div class="mb-6">
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Timeframe</label>
+                <select id="cr-days" class="input-field w-full text-sm">
+                    <option value="30">Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                    <option value="365">Last 365 Days</option>
+                </select>
+            </div>
+            <div class="flex justify-between">
+                <button type="button" onclick="document.getElementById('cr-step-2').classList.add('hidden'); document.getElementById('cr-step-1').classList.remove('hidden')" class="btn btn-secondary">Back</button>
+                <button type="button" onclick="generatePreview()" class="btn btn-primary">Next: Preview Data</button>
+            </div>
+        </div>
+        
+        <!-- Step 3 -->
+        <div id="cr-step-3" class="hidden">
+            <h4 class="font-medium text-[var(--color-primary)] mb-3">Step 3: Preview & Export</h4>
+            <div class="p-4 bg-[var(--color-surface-2)] rounded border border-[var(--color-border)] mb-6 text-sm" id="cr-preview-area">
+                Loading preview...
+            </div>
+            <div class="flex justify-between items-center">
+                <button type="button" onclick="document.getElementById('cr-step-3').classList.add('hidden'); document.getElementById('cr-step-2').classList.remove('hidden')" class="btn btn-secondary">Back</button>
+                <div class="flex gap-3">
+                    <button type="button" onclick="submitCustomExport('CSV')" class="btn btn-secondary">Export CSV</button>
+                    <button type="button" onclick="submitCustomExport('PDF')" class="btn btn-primary">Export PDF</button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+{% endblock %}
 {% block content %}
-<!-- Breadcrumbs & Header Title Block -->
-<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-<div>
-<!-- Breadcrumb -->
-<nav class="flex items-center gap-2 text-xs font-medium text-secondary mb-1">
-<span>Library Administration</span>
-<span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
-<span>Intelligence &amp; Analytics</span>
-<span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
-<span class="text-accent font-semibold">Analytics &amp; Reports</span>
-</nav>
-<h1 class="text-3xl font-bold tracking-tight text-accent">Institutional Analytics &amp; Executive Reports</h1>
-<p class="text-base  text-secondary mt-0.5">
-            Comprehensive circulation trends, collection turnover rates, department borrowing behavior, and automated audit reporting.
-          </p>
-</div>
-<!-- Action Buttons Cluster -->
-<div class="flex items-center gap-2.5 flex-wrap">
-<button class="px-3.5 py-2 rounded-lg bg-surface border border-gray-200 text-accent hover:bg-gray-50 text-sm font-medium flex items-center gap-2 shadow-soft transition-all">
-<span class="material-symbols-outlined text-lg text-secondary" data-icon="download">download</span>
-<span>Export Report</span>
-<span class="text-xs text-secondary">(CSV/PDF)</span>
-</button>
-<button class="px-3.5 py-2 rounded-lg bg-surface border border-gray-200 text-accent hover:bg-gray-50 text-sm font-medium flex items-center gap-2 shadow-soft transition-all">
-<span class="material-symbols-outlined text-lg text-secondary" data-icon="calendar_month">calendar_month</span>
-<span>Schedule Digest</span>
-</button>
-<button class="px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent-container font-semibold text-sm flex items-center gap-1.5 shadow-soft transition-all active:scale-95">
-<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
-<span>Create Custom Report</span>
-</button>
-</div>
-</div>
-<!-- ========================================================================= -->
-<!-- EXECUTIVE KPI METRIC CARDS                                                -->
-<!-- ========================================================================= -->
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-<!-- Metric Card 1 -->
-<div class="p-4 rounded-lg bg-surface border border-gray-200 shadow-soft hover:shadow-soft transition-shadow">
-<div class="flex items-center justify-between">
-<span class="text-sm font-medium text-secondary">Total Circulation Volume</span>
-<div class="w-8 h-8 rounded-lg bg-accent-fixed flex items-center justify-center text-accent">
-<span class="material-symbols-outlined text-lg" data-icon="auto_stories">auto_stories</span>
-</div>
-</div>
-<div class="mt-2 flex items-baseline gap-2">
-<span class="text-3xl font-bold tracking-tight text-accent">48,290</span>
-<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 font-semibold">
-<span class="material-symbols-outlined text-xs mr-0.5" data-icon="arrow_upward">arrow_upward</span>
-              +14.6%
-            </span>
-</div>
-<p class="text-sm  text-secondary mt-1">32,450 Loans • 15,840 Returns</p>
-<div class="mt-3 w-full bg-gray-50 h-1.5 rounded-full overflow-hidden">
-<div class="bg-accent h-full rounded-full" style="width: 67%"></div>
-</div>
-</div>
-<!-- Metric Card 2 -->
-<div class="p-4 rounded-lg bg-surface border border-gray-200 shadow-soft hover:shadow-soft transition-shadow">
-<div class="flex items-center justify-between">
-<span class="text-sm font-medium text-secondary">Collection Turnover Rate</span>
-<div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-accent">
-<span class="material-symbols-outlined text-lg" data-icon="speed">speed</span>
-</div>
-</div>
-<div class="mt-2 flex items-baseline gap-2">
-<span class="text-3xl font-bold tracking-tight text-accent">3.42x</span>
-<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 font-semibold">
-<span class="material-symbols-outlined text-xs mr-0.5" data-icon="arrow_upward">arrow_upward</span>
-              +0.3x
-            </span>
-</div>
-<p class="text-sm  text-secondary mt-1">92.4% shelf utilization in STEM &amp; Tech</p>
-<div class="mt-3 w-full bg-gray-50 h-1.5 rounded-full overflow-hidden">
-<div class="bg-accent-container h-full rounded-full" style="width: 82%"></div>
-</div>
-</div>
-<!-- Metric Card 3 -->
-<div class="p-4 rounded-lg bg-surface border border-gray-200 shadow-soft hover:shadow-soft transition-shadow">
-<div class="flex items-center justify-between">
-<span class="text-sm font-medium text-secondary">Active Patron Engagement</span>
-<div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-accent">
-<span class="material-symbols-outlined text-lg" data-icon="group">group</span>
-</div>
-</div>
-<div class="mt-2 flex items-baseline gap-2">
-<span class="text-3xl font-bold tracking-tight text-accent">68.5%</span>
-<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 font-semibold">
-<span class="material-symbols-outlined text-xs mr-0.5" data-icon="arrow_upward">arrow_upward</span>
-              +4.2% YoY
-            </span>
-</div>
-<p class="text-sm  text-secondary mt-1">12,618 active / 18,420 members</p>
-<div class="mt-3 w-full bg-gray-50 h-1.5 rounded-full overflow-hidden">
-<div class="bg-tertiary-container h-full rounded-full" style="width: 68.5%"></div>
-</div>
-</div>
-<!-- Metric Card 4 -->
-<div class="p-4 rounded-lg bg-surface border border-gray-200 shadow-soft hover:shadow-soft transition-shadow">
-<div class="flex items-center justify-between">
-<span class="text-sm font-medium text-secondary">Hold Fulfillment SLA</span>
-<div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-accent">
-<span class="material-symbols-outlined text-lg" data-icon="timelapse">timelapse</span>
-</div>
-</div>
-<div class="mt-2 flex items-baseline gap-2">
-<span class="text-3xl font-bold tracking-tight text-accent">1.8 Days</span>
-<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 font-semibold">
-<span class="material-symbols-outlined text-xs mr-0.5" data-icon="arrow_downward">arrow_downward</span>
-              -18% Turnaround
-            </span>
-</div>
-<p class="text-sm  text-secondary mt-1">96.4% fulfilled inside target window</p>
-<div class="mt-3 w-full bg-gray-50 h-1.5 rounded-full overflow-hidden">
-<div class="bg-emerald-500 h-full rounded-full" style="width: 96.4%"></div>
-</div>
-</div>
-</div>
-<!-- ========================================================================= -->
-<!-- FILTER & DATE-RANGE CONTROLS TOOLBAR                                      -->
-<!-- ========================================================================= -->
-<div class="p-3.5 rounded-lg bg-surface border border-gray-200 flex flex-wrap items-center justify-between gap-3 shadow-soft">
-<!-- Preset Range Pills -->
-<div class="flex items-center gap-1 bg-background p-1 rounded-lg border border-gray-200">
-<button class="px-2.5 py-1 text-xs font-medium text-secondary hover:text-accent rounded transition-colors">Last 7 Days</button>
-<button class="px-2.5 py-1 text-xs font-medium text-secondary hover:text-accent rounded transition-colors">Last 30 Days</button>
-<button class="px-3 py-1 text-xs font-medium bg-surface text-accent font-semibold rounded shadow-soft">Current Semester (Fall 2024)</button>
-<button class="px-2.5 py-1 text-xs font-medium text-secondary hover:text-accent rounded transition-colors">Academic Year 23-24</button>
-<button class="px-2.5 py-1 text-xs font-medium text-secondary hover:text-accent rounded flex items-center gap-1 transition-colors">
-<span>Custom</span>
-<span class="material-symbols-outlined text-xs" data-icon="date_range">date_range</span>
-</button>
-</div>
-<!-- Facet Dropdowns & Comparison -->
-<div class="flex items-center gap-2.5 flex-wrap">
-<!-- Campus Branch -->
-<div class="flex items-center gap-1.5 text-xs font-medium text-secondary">
-<label>Branch:</label>
-<select class="py-1 px-2.5 bg-surface border border-gray-200 rounded text-accent text-xs font-medium focus:ring-1 focus:ring-primary focus:outline-none">
-<option>All Branches (Main, Turing, Science)</option>
-<option>Main Campus Central</option>
-<option>Turing Annex &amp; Storage</option>
-<option>Science &amp; Health Library</option>
-</select>
-</div>
-<!-- Department -->
-<div class="flex items-center gap-1.5 text-xs font-medium text-secondary">
-<label>Faculty:</label>
-<select class="py-1 px-2.5 bg-surface border border-gray-200 rounded text-accent text-xs font-medium focus:ring-1 focus:ring-primary focus:outline-none">
-<option>All Departments</option>
-<option>Computer Science &amp; AI</option>
-<option>Engineering &amp; Applied Sci</option>
-<option>Medicine &amp; Health</option>
-<option>Humanities &amp; Arts</option>
-</select>
-</div>
-<!-- Material Format -->
-<div class="flex items-center gap-1.5 text-xs font-medium text-secondary">
-<label>Media:</label>
-<select class="py-1 px-2.5 bg-surface border border-gray-200 rounded text-accent text-xs font-medium focus:ring-1 focus:ring-primary focus:outline-none">
-<option>All Media (Monograph, E-Book, Special)</option>
-<option>Physical Monographs</option>
-<option>E-Books &amp; DRM Licenses</option>
-<option>Print Serial / Journals</option>
-<option>Special Archives</option>
-</select>
-</div>
-<div class="h-5 w-px bg-outline-variant mx-1"></div>
-<!-- Quick Compare Toggle -->
-<label class="flex items-center gap-2 cursor-pointer select-none">
-<input checked="" class="rounded text-accent focus:ring-primary h-4 w-4 border-gray-200" type="checkbox"/>
-<span class="text-xs font-medium text-accent">Compare Spring '24</span>
-</label>
-</div>
-</div>
-<!-- ========================================================================= -->
-<!-- BENTO / 12-COLUMN MAIN VISUALIZATIONS                                     -->
-<!-- ========================================================================= -->
-<div class="grid grid-cols-12 gap-6">
-<!-- Wide Chart Widget: Circulation Velocity & Trends (8 cols) -->
-<div class="col-span-12 xl:col-span-8 p-5 rounded-lg bg-surface border border-gray-200 shadow-soft flex flex-col justify-between">
-<div>
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-gray-200">
-<div>
-<h2 class="text-headline-sm font-headline-sm text-accent">Circulation Volume &amp; Lending Velocity Trends</h2>
-<p class="text-sm  text-secondary">Monthly checkout trajectories, item returns, and reservation queues (May – Oct 2024)</p>
-</div>
-<div class="flex items-center gap-3">
-<div class="flex items-center gap-1.5 text-xs font-medium text-secondary">
-<span class="w-3 h-3 rounded-sm bg-accent"></span>
-<span>Checkouts</span>
-</div>
-<div class="flex items-center gap-1.5 text-xs font-medium text-secondary">
-<span class="w-3 h-3 rounded-sm bg-secondary-container"></span>
-<span>Returns</span>
-</div>
-<div class="flex items-center gap-1.5 text-xs font-medium text-secondary">
-<span class="w-2.5 h-0.5 bg-tertiary-fixed-dim"></span>
-<span>Holds</span>
-</div>
-</div>
-</div>
-<!-- CSS Bar Chart Representation -->
-<div class="mt-6 pt-2">
-<div class="h-56 flex items-end justify-between gap-4 px-2">
-<!-- Month 1: May -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-<div class="text-[11px] text-secondary opacity-0 group-hover:opacity-100 transition-opacity">5,420</div>
-<div class="w-full max-w-[36px] flex items-end gap-1 h-3/5">
-<div class="w-1/2 bg-accent rounded-t-sm h-[70%]" title="Loans: 3,800"></div>
-<div class="w-1/2 bg-secondary-container rounded-t-sm h-[50%]" title="Returns: 2,600"></div>
-</div>
-<span class="text-xs font-medium text-secondary">May</span>
-</div>
-<!-- Month 2: Jun -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-<div class="text-[11px] text-secondary opacity-0 group-hover:opacity-100 transition-opacity">4,120</div>
-<div class="w-full max-w-[36px] flex items-end gap-1 h-3/5">
-<div class="w-1/2 bg-accent rounded-t-sm h-[50%]" title="Loans: 2,700"></div>
-<div class="w-1/2 bg-secondary-container rounded-t-sm h-[42%]" title="Returns: 2,200"></div>
-</div>
-<span class="text-xs font-medium text-secondary">Jun</span>
-</div>
-<!-- Month 3: Jul -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-<div class="text-[11px] text-secondary opacity-0 group-hover:opacity-100 transition-opacity">3,890</div>
-<div class="w-full max-w-[36px] flex items-end gap-1 h-3/5">
-<div class="w-1/2 bg-accent rounded-t-sm h-[40%]" title="Loans: 2,100"></div>
-<div class="w-1/2 bg-secondary-container rounded-t-sm h-[35%]" title="Returns: 1,850"></div>
-</div>
-<span class="text-xs font-medium text-secondary">Jul</span>
-</div>
-<!-- Month 4: Aug -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-<div class="text-[11px] text-secondary opacity-0 group-hover:opacity-100 transition-opacity">6,840</div>
-<div class="w-full max-w-[36px] flex items-end gap-1 h-3/5">
-<div class="w-1/2 bg-accent rounded-t-sm h-[75%]" title="Loans: 4,400"></div>
-<div class="w-1/2 bg-secondary-container rounded-t-sm h-[58%]" title="Returns: 3,200"></div>
-</div>
-<span class="text-xs font-medium text-secondary">Aug</span>
-</div>
-<!-- Month 5: Sep -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-<div class="text-[11px] text-secondary opacity-0 group-hover:opacity-100 transition-opacity">8,910</div>
-<div class="w-full max-w-[36px] flex items-end gap-1 h-3/5">
-<div class="w-1/2 bg-accent rounded-t-sm h-[90%]" title="Loans: 6,100"></div>
-<div class="w-1/2 bg-secondary-container rounded-t-sm h-[75%]" title="Returns: 4,900"></div>
-</div>
-<span class="text-xs font-medium text-secondary">Sep</span>
-</div>
-<!-- Month 6: Oct (Peak) -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end relative group">
-<div class="absolute -top-3 bg-tertiary text-on-tertiary text-[10px] px-1.5 py-0.5 rounded font-semibold whitespace-nowrap shadow">
-                    Midterm Peak: 9,840
-                  </div>
-<div class="w-full max-w-[36px] flex items-end gap-1 h-3/5">
-<div class="w-1/2 bg-accent rounded-t-sm h-[100%]" title="Loans: 7,420"></div>
-<div class="w-1/2 bg-secondary-container rounded-t-sm h-[85%]" title="Returns: 5,600"></div>
-</div>
-<span class="text-xs font-medium font-bold text-accent">Oct</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Bottom Insights Callout -->
-<div class="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between flex-wrap gap-2 text-sm ">
-<div class="flex items-center gap-2 text-accent">
-<span class="material-symbols-outlined text-accent text-base" data-icon="insights">insights</span>
-<span><strong>Key Velocity Insight:</strong> Peak daily checkouts concentrate between <strong>14:00 – 16:30</strong> (Tuesdays/Thursdays).</span>
-</div>
-<span class="text-xs text-secondary">Correlation with Exam Schedule: 0.88</span>
-</div>
-</div>
-<!-- Collection Turnover by Classification (4 cols) -->
-<div class="col-span-12 xl:col-span-4 p-5 rounded-lg bg-surface border border-gray-200 shadow-soft flex flex-col justify-between">
-<div>
-<div class="flex items-center justify-between pb-3 border-b border-gray-200">
-<div>
-<h2 class="text-headline-sm font-headline-sm text-accent">Turnover by Classification</h2>
-<p class="text-sm  text-secondary">LC Call numbers velocity</p>
-</div>
-<span class="material-symbols-outlined text-secondary" data-icon="category">category</span>
-</div>
-<div class="mt-4 space-y-3.5">
-<!-- QA76: CS -->
-<div>
-<div class="flex items-center justify-between text-sm font-medium">
-<span class="text-accent font-semibold">QA76 (Computer Science)</span>
-<span class="text-accent font-bold">94%</span>
-</div>
-<div class="w-full bg-gray-50 h-2 rounded-full mt-1.5 overflow-hidden">
-<div class="bg-accent h-full rounded-full" style="width: 94%"></div>
-</div>
-<div class="flex justify-between text-[11px] text-secondary mt-1">
-<span>High Velocity (Over-subscribed)</span>
-<span>14.8 loans/vol</span>
-</div>
-</div>
-<!-- TA: Engineering -->
-<div>
-<div class="flex items-center justify-between text-sm font-medium">
-<span class="text-accent font-semibold">TA1-2040 (Engineering)</span>
-<span class="text-accent font-bold">86%</span>
-</div>
-<div class="w-full bg-gray-50 h-2 rounded-full mt-1.5 overflow-hidden">
-<div class="bg-accent-container h-full rounded-full" style="width: 86%"></div>
-</div>
-<div class="flex justify-between text-[11px] text-secondary mt-1">
-<span>Optimal Turnover</span>
-<span>9.2 loans/vol</span>
-</div>
-</div>
-<!-- R: Medicine -->
-<div>
-<div class="flex items-center justify-between text-sm font-medium">
-<span class="text-accent font-semibold">R-RZ (Clinical Medicine)</span>
-<span class="text-accent font-bold">79%</span>
-</div>
-<div class="w-full bg-gray-50 h-2 rounded-full mt-1.5 overflow-hidden">
-<div class="bg-tertiary-container h-full rounded-full" style="width: 79%"></div>
-</div>
-<div class="flex justify-between text-[11px] text-secondary mt-1">
-<span>Optimal Turnover</span>
-<span>8.1 loans/vol</span>
-</div>
-</div>
-<!-- QA: Math -->
-<div>
-<div class="flex items-center justify-between text-sm font-medium">
-<span class="text-accent font-semibold">QA1-939 (Pure Mathematics)</span>
-<span class="text-accent font-bold">71%</span>
-</div>
-<div class="w-full bg-gray-50 h-2 rounded-full mt-1.5 overflow-hidden">
-<div class="bg-secondary h-full rounded-full" style="width: 71%"></div>
-</div>
-<div class="flex justify-between text-[11px] text-secondary mt-1">
-<span>Steady Velocity</span>
-<span>5.4 loans/vol</span>
-</div>
-</div>
-<!-- P: Literature & Arts -->
-<div>
-<div class="flex items-center justify-between text-sm font-medium">
-<span class="text-accent font-semibold">P-PZ (Literature &amp; Arts)</span>
-<span class="text-secondary font-bold">54%</span>
-</div>
-<div class="w-full bg-gray-50 h-2 rounded-full mt-1.5 overflow-hidden">
-<div class="bg-outline h-full rounded-full" style="width: 54%"></div>
-</div>
-<div class="flex justify-between text-[11px] text-secondary mt-1">
-<span class="text-amber-600 font-medium">Stagnant Risk (Under-utilized)</span>
-<span>2.1 loans/vol</span>
-</div>
-</div>
-</div>
-</div>
-<button class="mt-4 w-full py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-accent hover:bg-gray-50 text-center transition-colors">
+
+<div class="mb-8 flex flex-col lg:flex-row lg:items-end justify-between gap-6 stagger-1">
+    <div>
+        <nav class="flex items-center gap-2 text-xs font-medium text-[var(--color-muted)] mb-2">
+            <span>Library Administration</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span>Intelligence & Analytics</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-[var(--color-text)] font-semibold">Analytics & Reports</span>
+        </nav>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Institutional Analytics & Executive Reports</h1>
+        <p class="text-[var(--color-muted)]">Comprehensive circulation trends, collection turnover rates, department borrowing behavior, and automated audit reporting.</p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+        <button onclick="document.getElementById('exportModal').classList.remove('hidden')" class="btn btn-secondary flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">download</span> Export Report <span class="text-xs opacity-60">(CSV/PDF)</span>
+        </button>
+        <button onclick="document.getElementById('scheduleModal').classList.remove('hidden')" class="btn btn-secondary flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">calendar_month</span> Schedule Digest
+        </button>
+        <button onclick="document.getElementById('customReportModal').classList.remove('hidden')" class="btn btn-primary flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">add</span> Create Custom Report
+        </button>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8 stagger-2">
+    <!-- Card 1 -->
+    <div class="glass-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium text-[var(--color-muted)]">Total Circulation Volume</span>
+            <div class="w-8 h-8 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text)]">
+                <span class="material-symbols-outlined text-[18px]">auto_stories</span>
+            </div>
+        </div>
+        <div class="flex items-baseline gap-2 mb-2">
+            <span class="text-3xl font-bold">48,290</span>
+            <span class="badge badge-success flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">arrow_upward</span>+14.6%</span>
+        </div>
+        <p class="text-xs text-[var(--color-muted)] mb-3">32,450 Loans • 15,840 Returns</p>
+        <div class="w-full bg-[var(--color-surface-2)] h-1.5 rounded-full overflow-hidden">
+            <div class="bg-[var(--color-text)] h-full rounded-full" style="width: 67%"></div>
+        </div>
+    </div>
+    <!-- Card 2 -->
+    <div class="glass-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium text-[var(--color-muted)]">Collection Turnover Rate</span>
+            <div class="w-8 h-8 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text)]">
+                <span class="material-symbols-outlined text-[18px]">speed</span>
+            </div>
+        </div>
+        <div class="flex items-baseline gap-2 mb-2">
+            <span class="text-3xl font-bold">3.42x</span>
+            <span class="badge badge-success flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">arrow_upward</span>+0.3x</span>
+        </div>
+        <p class="text-xs text-[var(--color-muted)] mb-3">92.4% shelf utilization in STEM & Tech</p>
+        <div class="w-full bg-[var(--color-surface-2)] h-1.5 rounded-full overflow-hidden">
+            <div class="bg-[var(--color-text)] h-full rounded-full" style="width: 82%"></div>
+        </div>
+    </div>
+    <!-- Card 3 -->
+    <div class="glass-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium text-[var(--color-muted)]">Active Patron Engagement</span>
+            <div class="w-8 h-8 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text)]">
+                <span class="material-symbols-outlined text-[18px]">group</span>
+            </div>
+        </div>
+        <div class="flex items-baseline gap-2 mb-2">
+            <span class="text-3xl font-bold">68.5%</span>
+            <span class="badge badge-success flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">arrow_upward</span>+4.2% YoY</span>
+        </div>
+        <p class="text-xs text-[var(--color-muted)] mb-3">12,618 active / 18,420 members</p>
+        <div class="w-full bg-[var(--color-surface-2)] h-1.5 rounded-full overflow-hidden">
+            <div class="bg-[var(--color-text)] h-full rounded-full" style="width: 68.5%"></div>
+        </div>
+    </div>
+    <!-- Card 4 -->
+    <div class="glass-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium text-[var(--color-muted)]">Hold Fulfillment SLA</span>
+            <div class="w-8 h-8 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text)]">
+                <span class="material-symbols-outlined text-[18px]">schedule</span>
+            </div>
+        </div>
+        <div class="flex items-baseline gap-2 mb-2">
+            <span class="text-3xl font-bold">1.8 Days</span>
+            <span class="badge badge-success flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">arrow_downward</span>-18% Turnaround</span>
+        </div>
+        <p class="text-xs text-[var(--color-muted)] mb-3">96.4% fulfilled inside target window</p>
+        <div class="w-full bg-[var(--color-surface-2)] h-1.5 rounded-full overflow-hidden">
+            <div class="bg-[var(--color-primary)] h-full rounded-full shadow-[0_0_10px_var(--color-primary-glow)]" style="width: 96.4%"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="glass-panel p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 stagger-3">
+    <!-- Time Tabs -->
+    <div class="flex p-1 bg-[var(--color-surface-2)] rounded-lg border border-[var(--color-border)] overflow-x-auto">
+        <button class="px-4 py-1.5 text-xs font-medium text-[var(--color-muted)] hover:text-[var(--color-text)] transition-colors whitespace-nowrap">Last 7 Days</button>
+        <button class="px-4 py-1.5 text-xs font-medium text-[var(--color-muted)] hover:text-[var(--color-text)] transition-colors whitespace-nowrap">Last 30 Days</button>
+        <button class="px-4 py-1.5 text-xs font-medium bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm rounded border border-[var(--color-border)] whitespace-nowrap">Current Semester (Fall 2024)</button>
+        <button class="px-4 py-1.5 text-xs font-medium text-[var(--color-muted)] hover:text-[var(--color-text)] transition-colors whitespace-nowrap">Academic Year 23-24</button>
+        <button class="px-4 py-1.5 text-xs font-medium text-[var(--color-muted)] hover:text-[var(--color-text)] transition-colors flex items-center gap-1 whitespace-nowrap">Custom <span class="material-symbols-outlined text-[14px]">date_range</span></button>
+    </div>
+    
+    <!-- Selectors -->
+    <div class="flex items-center gap-4 flex-wrap">
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-[var(--color-muted)]">Branch:</span>
+            <select class="input-field py-1 text-xs min-w-[140px] border-none bg-[var(--color-surface-2)] rounded outline-none focus:ring-1 focus:ring-[var(--color-border)] text-[var(--color-text)] px-2">
+                <option>All Branches</option>
+                <option>Main</option>
+                <option>Turing</option>
+                <option>Science</option>
+            </select>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-[var(--color-muted)]">Faculty:</span>
+            <select class="input-field py-1 text-xs min-w-[140px] border-none bg-[var(--color-surface-2)] rounded outline-none focus:ring-1 focus:ring-[var(--color-border)] text-[var(--color-text)] px-2">
+                <option>All Departments</option>
+            </select>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-[var(--color-muted)]">Media:</span>
+            <select class="input-field py-1 text-xs min-w-[140px] border-none bg-[var(--color-surface-2)] rounded outline-none focus:ring-1 focus:ring-[var(--color-border)] text-[var(--color-text)] px-2">
+                <option>All Media</option>
+            </select>
+        </div>
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked class="rounded border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-primary)]">
+            <span class="text-xs font-medium text-[var(--color-text)]">Compare Spring '24</span>
+        </label>
+    </div>
+</div>
+
+<!-- Main Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 stagger-4 mb-8">
+    
+    <!-- Left Huge Chart -->
+    <div class="xl:col-span-2 glass-panel p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h3 class="font-semibold text-lg">Circulation Volume & Lending Velocity Trends</h3>
+                <p class="text-xs text-[var(--color-muted)] mt-1">Monthly checkout trajectories, item returns, and reservation queues (May – Oct 2024)</p>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-medium">
+                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[var(--color-text)]"></span>Checkouts</div>
+                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[var(--color-muted)]"></span>Returns</div>
+                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>Holds</div>
+            </div>
+        </div>
+        
+        <!-- Mock Chart Area -->
+        <div class="flex-1 min-h-[300px] border-b border-[var(--color-border)] relative flex items-end justify-between px-4 pb-8">
+            <!-- Grid Lines -->
+            <div class="absolute inset-0 flex flex-col justify-between opacity-10 pointer-events-none">
+                <div class="w-full h-px bg-[var(--color-text)]"></div>
+                <div class="w-full h-px bg-[var(--color-text)]"></div>
+                <div class="w-full h-px bg-[var(--color-text)]"></div>
+                <div class="w-full h-px bg-[var(--color-text)]"></div>
+            </div>
+            
+            <div class="absolute right-4 top-20 text-[10px] text-[var(--color-muted)] font-mono">Midterm Peak: 9,840</div>
+            
+            <!-- Mock Columns -->
+            <div class="w-16 h-[30%] bg-[var(--color-surface-hover)] rounded-t-sm relative group cursor-pointer hover:bg-[var(--color-surface-2)] transition-colors"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-[var(--color-muted)]">May</span></div>
+            <div class="w-16 h-[20%] bg-[var(--color-surface-hover)] rounded-t-sm relative group cursor-pointer hover:bg-[var(--color-surface-2)] transition-colors"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-[var(--color-muted)]">Jun</span></div>
+            <div class="w-16 h-[25%] bg-[var(--color-surface-hover)] rounded-t-sm relative group cursor-pointer hover:bg-[var(--color-surface-2)] transition-colors"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-[var(--color-muted)]">Jul</span></div>
+            <div class="w-16 h-[50%] bg-[var(--color-surface-hover)] rounded-t-sm relative group cursor-pointer hover:bg-[var(--color-surface-2)] transition-colors"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-[var(--color-muted)]">Aug</span></div>
+            <div class="w-16 h-[80%] bg-[var(--color-text)] rounded-t-sm relative group cursor-pointer hover:bg-white transition-colors shadow-[0_0_20px_var(--color-primary-transparent)]"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-[var(--color-text)] font-semibold">Sep</span></div>
+            <div class="w-16 h-[65%] bg-[var(--color-surface-hover)] rounded-t-sm relative group cursor-pointer hover:bg-[var(--color-surface-2)] transition-colors"><span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-[var(--color-muted)]">Oct</span></div>
+        </div>
+        
+        <div class="mt-8 flex items-start gap-3 p-4 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border)]">
+            <span class="material-symbols-outlined text-[var(--color-primary)]">trending_up</span>
+            <div>
+                <div class="text-sm text-[var(--color-text)]"><span class="font-semibold">Key Velocity Insight:</span> Peak daily checkouts concentrate between <span class="font-bold">14:00 - 16:30</span> (Tuesdays/Thursdays).</div>
+                <div class="text-xs text-[var(--color-muted)] mt-1">Correlation with Exam Schedule: 0.88</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Sidebar Table -->
+    <div class="glass-panel p-6">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="font-semibold text-lg">Turnover by Classification</h3>
+                <p class="text-xs text-[var(--color-muted)] mt-1">LC Call numbers velocity</p>
+            </div>
+            <div class="w-8 h-8 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text)] cursor-pointer hover:bg-[var(--color-surface-hover)]">
+                <span class="material-symbols-outlined text-[16px]">filter_alt</span>
+            </div>
+        </div>
+        
+        <div class="space-y-6">
+            <!-- Row 1 -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold">QA76 (Computer Science)</span>
+                    <span class="text-sm font-bold">94%</span>
+                </div>
+                <div class="w-full bg-[var(--color-surface-2)] h-2 rounded-full overflow-hidden mb-1">
+                    <div class="bg-[var(--color-text)] h-full rounded-full" style="width: 94%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-[var(--color-muted)]">
+                    <span>High Velocity (Over-subscribed)</span>
+                    <span>14.8 loans/vol</span>
+                </div>
+            </div>
+            <!-- Row 2 -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold">TA1-2040 (Engineering)</span>
+                    <span class="text-sm font-bold">86%</span>
+                </div>
+                <div class="w-full bg-[var(--color-surface-2)] h-2 rounded-full overflow-hidden mb-1">
+                    <div class="bg-[var(--color-text)] h-full rounded-full" style="width: 86%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-[var(--color-muted)]">
+                    <span>Optimal Turnover</span>
+                    <span>9.2 loans/vol</span>
+                </div>
+            </div>
+            <!-- Row 3 -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold">R-RZ (Clinical Medicine)</span>
+                    <span class="text-sm font-bold">79%</span>
+                </div>
+                <div class="w-full bg-[var(--color-surface-2)] h-2 rounded-full overflow-hidden mb-1">
+                    <div class="bg-[var(--color-text)] h-full rounded-full" style="width: 79%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-[var(--color-muted)]">
+                    <span>Optimal Turnover</span>
+                    <span>8.1 loans/vol</span>
+                </div>
+            </div>
+            <!-- Row 4 -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold">QA1-939 (Pure Mathematics)</span>
+                    <span class="text-sm font-bold">71%</span>
+                </div>
+                <div class="w-full bg-[var(--color-surface-2)] h-2 rounded-full overflow-hidden mb-1">
+                    <div class="bg-[var(--color-text)] h-full rounded-full" style="width: 71%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-[var(--color-muted)]">
+                    <span>Steady Velocity</span>
+                    <span>5.4 loans/vol</span>
+                </div>
+            </div>
+            <!-- Row 5 -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold">P-PZ (Literature & Arts)</span>
+                    <span class="text-sm font-bold">54%</span>
+                </div>
+                <div class="w-full bg-[var(--color-surface-2)] h-2 rounded-full overflow-hidden mb-1">
+                    <div class="bg-[var(--color-text)] h-full rounded-full" style="width: 54%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-[var(--color-muted)]">
+                    <span class="text-[var(--color-primary)] font-medium">Stagnant Risk (Under-utilized)</span>
+                    <span>2.1 loans/vol</span>
+                </div>
+            </div>
+        </div>
+        
+        <button class="w-full py-2 mt-6 border border-[var(--color-border)] rounded text-xs font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors">
             View All 42 Classification Ranges →
-          </button>
+        </button>
+    </div>
 </div>
+
+
+<!-- Scheduled Reports Table -->
+<div class="glass-panel p-6 stagger-5">
+    <h3 class="font-semibold text-lg mb-4">Scheduled Reports</h3>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+            <thead class="text-xs text-[var(--color-muted)] border-b border-[var(--color-border)]">
+                <tr>
+                    <th class="pb-3 font-medium">Report</th>
+                    <th class="pb-3 font-medium">Type</th>
+                    <th class="pb-3 font-medium">Frequency</th>
+                    <th class="pb-3 font-medium">Next Run</th>
+                    <th class="pb-3 font-medium">Status</th>
+                    <th class="pb-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--color-border)]">
+                {% for schedule in scheduled_reports %}
+                <tr class="hover:bg-[var(--color-surface-hover)] transition-colors">
+                    <td class="py-3 font-medium">{{ schedule.name }}</td>
+                    <td class="py-3 text-[var(--color-muted)]">{{ schedule.get_report_type_display }}</td>
+                    <td class="py-3 text-[var(--color-muted)]">{{ schedule.get_frequency_display }}</td>
+                    <td class="py-3 text-[var(--color-muted)]">{{ schedule.next_run_at|default:"Pending" }}</td>
+                    <td class="py-3">
+                        {% if schedule.is_active %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge" style="background:var(--color-surface-2)">Paused</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-3 text-right">
+                        <button onclick="runSchedule({{ schedule.id }})" class="text-[var(--color-primary)] hover:underline mr-3">Run Now</button>
+                        <button onclick="toggleSchedule({{ schedule.id }})" class="text-[var(--color-muted)] hover:text-white mr-3">{% if schedule.is_active %}Pause{% else %}Resume{% endif %}</button>
+                        <button onclick="deleteSchedule({{ schedule.id }})" class="text-red-500 hover:underline">Delete</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="py-8 text-center text-[var(--color-muted)]">No scheduled reports found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-<!-- ========================================================================= -->
-<!-- PATRON DEMOGRAPHICS & TOP ASSETS TABLE (2 Columns)                        -->
-<!-- ========================================================================= -->
-<div class="grid grid-cols-12 gap-6">
-<!-- Patron Demographics & Department Borrowing Index (5 cols) -->
-<div class="col-span-12 xl:col-span-5 p-5 rounded-lg bg-surface border border-gray-200 shadow-soft flex flex-col justify-between">
-<div>
-<div class="flex items-center justify-between pb-3 border-b border-gray-200">
-<div>
-<h2 class="text-headline-sm font-headline-sm text-accent">Department Borrowing Index</h2>
-<p class="text-sm  text-secondary">Distribution of checkouts across faculties</p>
+
+<!-- ======================= MODALS ======================= -->
+
+<!-- Export Modal -->
+<div id="exportModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+    <div class="glass-panel w-full max-w-md p-6 relative">
+        <button onclick="document.getElementById('exportModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--color-muted)] hover:text-white">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h3 class="text-xl font-bold mb-4">Export Report</h3>
+        <form method="GET" action="{% url 'reports:export' %}" class="space-y-4">
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Data Source</label>
+                <select name="source" class="input-field w-full text-sm">
+                    <option value="transactions">Circulation & Transactions</option>
+                    <option value="books">Books Inventory</option>
+                    <option value="members">Members List</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Date Range</label>
+                <select name="date_range" class="input-field w-full text-sm">
+                    <option value="7">Last 7 Days</option>
+                    <option value="30">Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                    <option value="365">Last 365 Days</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Format</label>
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="format" value="CSV" checked class="text-[var(--color-primary)]"> <span class="text-sm">CSV Spreadsheet</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="format" value="PDF" class="text-[var(--color-primary)]"> <span class="text-sm">PDF Document</span>
+                    </label>
+                </div>
+            </div>
+            <button type="submit" onclick="window.Toast.show('Generating export...', 'info')" class="btn btn-primary w-full mt-4">Download Export</button>
+        </form>
+    </div>
 </div>
-<span class="material-symbols-outlined text-secondary" data-icon="pie_chart">pie_chart</span>
+
+<!-- Schedule Modal -->
+<div id="scheduleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+    <div class="glass-panel w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
+        <button onclick="document.getElementById('scheduleModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--color-muted)] hover:text-white">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h3 class="text-xl font-bold mb-4">Schedule Digest</h3>
+        <form id="scheduleForm" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Report Name</label>
+                <input type="text" name="name" required placeholder="e.g. Weekly Circulation Summary" class="input-field w-full text-sm">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Frequency</label>
+                    <select name="frequency" class="input-field w-full text-sm">
+                        <option value="DAILY">Daily</option>
+                        <option value="WEEKLY">Weekly</option>
+                        <option value="MONTHLY">Monthly</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Format</label>
+                    <select name="format" class="input-field w-full text-sm">
+                        <option value="CSV">CSV</option>
+                        <option value="PDF">PDF</option>
+                        <option value="BOTH">CSV + PDF</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Recipients (Emails)</label>
+                <input type="text" name="recipients" required placeholder="admin@library.com, staff@library.com" class="input-field w-full text-sm">
+            </div>
+            <button type="submit" class="btn btn-primary w-full mt-4">Save Schedule</button>
+        </form>
+    </div>
 </div>
-<!-- Segmented Distribution Bar -->
-<div class="mt-4">
-<div class="h-3 w-full rounded-full flex overflow-hidden">
-<div class="bg-accent h-full" style="width: 38%" title="Computer Science: 38%"></div>
-<div class="bg-accent-container h-full" style="width: 24%" title="Medicine: 24%"></div>
-<div class="bg-tertiary-container h-full" style="width: 19%" title="Engineering: 19%"></div>
-<div class="bg-secondary h-full" style="width: 11%" title="Physics &amp; Math: 11%"></div>
-<div class="bg-outline-variant h-full" style="width: 8%" title="Others: 8%"></div>
+
+<!-- Custom Report Modal -->
+<div id="customReportModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+    <div class="glass-panel w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto">
+        <button onclick="document.getElementById('customReportModal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--color-muted)] hover:text-white">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <h3 class="text-xl font-bold mb-4">Custom Report Builder</h3>
+        
+        <!-- Step 1 -->
+        <div id="cr-step-1">
+            <h4 class="font-medium text-[var(--color-primary)] mb-3">Step 1: Data Source</h4>
+            <select id="cr-source" class="input-field w-full text-sm mb-6">
+                <option value="transactions">Loans & Returns</option>
+                <option value="books">Books Inventory</option>
+                <option value="members">Members</option>
+            </select>
+            <div class="flex justify-end">
+                <button type="button" onclick="document.getElementById('cr-step-1').classList.add('hidden'); document.getElementById('cr-step-2').classList.remove('hidden')" class="btn btn-primary">Next: Filters</button>
+            </div>
+        </div>
+        
+        <!-- Step 2 -->
+        <div id="cr-step-2" class="hidden">
+            <h4 class="font-medium text-[var(--color-primary)] mb-3">Step 2: Filters & Sorting</h4>
+            <div class="mb-4">
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Filter by Status</label>
+                <select id="cr-status" class="input-field w-full text-sm">
+                    <option value="ALL">All Statuses</option>
+                    <option value="ISSUED">Issued / Active</option>
+                    <option value="RETURNED">Returned</option>
+                    <option value="OVERDUE">Overdue</option>
+                </select>
+            </div>
+            <div class="mb-6">
+                <label class="block text-xs font-medium text-[var(--color-muted)] mb-1">Timeframe</label>
+                <select id="cr-days" class="input-field w-full text-sm">
+                    <option value="30">Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                    <option value="365">Last 365 Days</option>
+                </select>
+            </div>
+            <div class="flex justify-between">
+                <button type="button" onclick="document.getElementById('cr-step-2').classList.add('hidden'); document.getElementById('cr-step-1').classList.remove('hidden')" class="btn btn-secondary">Back</button>
+                <button type="button" onclick="generatePreview()" class="btn btn-primary">Next: Preview Data</button>
+            </div>
+        </div>
+        
+        <!-- Step 3 -->
+        <div id="cr-step-3" class="hidden">
+            <h4 class="font-medium text-[var(--color-primary)] mb-3">Step 3: Preview & Export</h4>
+            <div class="p-4 bg-[var(--color-surface-2)] rounded border border-[var(--color-border)] mb-6 text-sm" id="cr-preview-area">
+                Loading preview...
+            </div>
+            <div class="flex justify-between items-center">
+                <button type="button" onclick="document.getElementById('cr-step-3').classList.add('hidden'); document.getElementById('cr-step-2').classList.remove('hidden')" class="btn btn-secondary">Back</button>
+                <div class="flex gap-3">
+                    <button type="button" onclick="submitCustomExport('CSV')" class="btn btn-secondary">Export CSV</button>
+                    <button type="button" onclick="submitCustomExport('PDF')" class="btn btn-primary">Export PDF</button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
 </div>
-</div>
-<!-- Faculty Breakdown List -->
-<div class="mt-4 space-y-2">
-<div class="flex items-center justify-between text-sm">
-<div class="flex items-center gap-2">
-<span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
-<span class="text-accent font-medium">School of Computer Science &amp; AI</span>
-</div>
-<span class="font-bold text-accent">38% <span class="text-secondary font-normal">(18,350)</span></span>
-</div>
-<div class="flex items-center justify-between text-sm">
-<div class="flex items-center gap-2">
-<span class="w-2.5 h-2.5 rounded-full bg-accent-container"></span>
-<span class="text-accent font-medium">School of Clinical Medicine</span>
-</div>
-<span class="font-bold text-accent">24% <span class="text-secondary font-normal">(11,589)</span></span>
-</div>
-<div class="flex items-center justify-between text-sm">
-<div class="flex items-center gap-2">
-<span class="w-2.5 h-2.5 rounded-full bg-tertiary-container"></span>
-<span class="text-accent font-medium">Electrical &amp; Computer Engineering</span>
-</div>
-<span class="font-bold text-accent">19% <span class="text-secondary font-normal">(9,175)</span></span>
-</div>
-<div class="flex items-center justify-between text-sm">
-<div class="flex items-center gap-2">
-<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
-<span class="text-accent font-medium">Physics, Chemistry &amp; Math</span>
-</div>
-<span class="font-bold text-accent">11% <span class="text-secondary font-normal">(5,312)</span></span>
-</div>
-<div class="flex items-center justify-between text-sm">
-<div class="flex items-center gap-2">
-<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>
-<span class="text-accent font-medium">Humanities &amp; Social Sciences</span>
-</div>
-<span class="font-bold text-accent">8% <span class="text-secondary font-normal">(3,864)</span></span>
-</div>
-</div>
-<!-- Borrower Cohort Role Split -->
-<div class="mt-5 pt-3 border-t border-gray-200">
-<span class="text-xs font-medium text-secondary uppercase tracking-wider">Patron Cohort Split</span>
-<div class="grid grid-cols-2 gap-2 mt-2">
-<div class="p-2 rounded bg-background border border-gray-200">
-<span class="text-xs text-secondary block">Postgraduate &amp; PhD</span>
-<span class="text-lg font-semibold text-accent">42.0%</span>
-</div>
-<div class="p-2 rounded bg-background border border-gray-200">
-<span class="text-xs text-secondary block">Undergraduates</span>
-<span class="text-lg font-semibold text-accent">38.0%</span>
-</div>
-<div class="p-2 rounded bg-background border border-gray-200">
-<span class="text-xs text-secondary block">Faculty &amp; Fellows</span>
-<span class="text-lg font-semibold text-accent">16.0%</span>
-</div>
-<div class="p-2 rounded bg-background border border-gray-200">
-<span class="text-xs text-secondary block">Alumni &amp; Visiting</span>
-<span class="text-lg font-semibold text-accent">4.0%</span>
-</div>
-</div>
-</div>
-</div>
-<div class="mt-3 flex items-center justify-between text-sm text-secondary">
-<span>Average Loan Duration: 14.2 Days</span>
-<a class="text-accent hover:underline text-xs font-semibold" href="#">Cohort Drilldown →</a>
-</div>
-</div>
-<!-- Top Performing & High-Demand Book Assets (7 cols) -->
-<div class="col-span-12 xl:col-span-7 p-5 rounded-lg bg-surface border border-gray-200 shadow-soft flex flex-col justify-between">
-<div>
-<div class="flex items-center justify-between pb-3 border-b border-gray-200">
-<div>
-<h2 class="text-headline-sm font-headline-sm text-accent">Top Performing Collection Assets</h2>
-<p class="text-sm  text-secondary">Highest circulation titles requiring queue &amp; hold monitoring</p>
-</div>
-<button class="px-2.5 py-1 text-xs font-medium text-accent hover:bg-gray-50 rounded border border-gray-200 transition-colors">
-                Full Inventory Table
-              </button>
-</div>
-<!-- Table of Top Assets -->
-<div class="overflow-x-auto mt-3">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="border-b border-gray-200 text-xs font-medium text-secondary">
-<th class="py-2 px-2">#</th>
-<th class="py-2 px-2">Title &amp; Primary Author</th>
-<th class="py-2 px-2 text-center">Loans</th>
-<th class="py-2 px-2">Queue / Status</th>
-<th class="py-2 px-2 text-right">Action</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-outline-variant text-sm">
-<!-- Row 1 -->
-<tr class="hover:bg-background transition-colors">
-<td class="py-2.5 px-2 font-bold text-accent">01</td>
-<td class="py-2.5 px-2">
-<div class="font-semibold text-accent">Designing Data-Intensive Applications</div>
-<div class="text-[11px] text-secondary">Martin Kleppmann • QA76.9 .D3 K54</div>
-</td>
-<td class="py-2.5 px-2 text-center font-bold text-accent">148</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700">
-<span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
-                        0 Idle (8 Holds)
-                      </span>
-</td>
-<td class="py-2.5 px-2 text-right">
-<button class="p-1 text-accent hover:bg-accent/10 rounded" title="Order Copies">
-<span class="material-symbols-outlined text-base" data-icon="add_shopping_cart">add_shopping_cart</span>
-</button>
-</td>
-</tr>
-<!-- Row 2 -->
-<tr class="hover:bg-background transition-colors">
-<td class="py-2.5 px-2 font-bold text-accent">02</td>
-<td class="py-2.5 px-2">
-<div class="font-semibold text-accent">Introduction to Algorithms (4th Ed)</div>
-<div class="text-[11px] text-secondary">Thomas H. Cormen et al. • QA76.6 .C66</div>
-</td>
-<td class="py-2.5 px-2 text-center font-bold text-accent">134</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-700">
-<span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-                        12 Holds in Queue
-                      </span>
-</td>
-<td class="py-2.5 px-2 text-right">
-<button class="p-1 text-accent hover:bg-accent/10 rounded" title="Order Copies">
-<span class="material-symbols-outlined text-base" data-icon="add_shopping_cart">add_shopping_cart</span>
-</button>
-</td>
-</tr>
-<!-- Row 3 -->
-<tr class="hover:bg-background transition-colors">
-<td class="py-2.5 px-2 font-bold text-accent">03</td>
-<td class="py-2.5 px-2">
-<div class="font-semibold text-accent">Clean Code: Agile Software Craftsmanship</div>
-<div class="text-[11px] text-secondary">Robert C. Martin • QA76.76 .D47</div>
-</td>
-<td class="py-2.5 px-2 text-center font-bold text-accent">118</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700">
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
-                        4 Active Holds
-                      </span>
-</td>
-<td class="py-2.5 px-2 text-right">
-<button class="p-1 text-secondary hover:bg-gray-50 rounded" title="View Circulation">
-<span class="material-symbols-outlined text-base" data-icon="visibility">visibility</span>
-</button>
-</td>
-</tr>
-<!-- Row 4 -->
-<tr class="hover:bg-background transition-colors">
-<td class="py-2.5 px-2 font-bold text-secondary">04</td>
-<td class="py-2.5 px-2">
-<div class="font-semibold text-accent">Principles of Neural Science (6th Ed)</div>
-<div class="text-[11px] text-secondary">Eric R. Kandel et al. • QP355.2 .P75</div>
-</td>
-<td class="py-2.5 px-2 text-center font-bold text-accent">92</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700">
-<span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
-                        94% Utilization
-                      </span>
-</td>
-<td class="py-2.5 px-2 text-right">
-<button class="p-1 text-secondary hover:bg-gray-50 rounded" title="View Circulation">
-<span class="material-symbols-outlined text-base" data-icon="visibility">visibility</span>
-</button>
-</td>
-</tr>
-<!-- Row 5 -->
-<tr class="hover:bg-background transition-colors">
-<td class="py-2.5 px-2 font-bold text-secondary">05</td>
-<td class="py-2.5 px-2">
-<div class="font-semibold text-accent">Artificial Intelligence: A Modern Approach</div>
-<div class="text-[11px] text-secondary">Stuart Russell &amp; Peter Norvig • Q335 .R87</div>
-</td>
-<td class="py-2.5 px-2 text-center font-bold text-accent">88</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700">
-<span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
-                        89% Utilization
-                      </span>
-</td>
-<td class="py-2.5 px-2 text-right">
-<button class="p-1 text-secondary hover:bg-gray-50 rounded" title="View Circulation">
-<span class="material-symbols-outlined text-base" data-icon="visibility">visibility</span>
-</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<!-- Table Bottom Bar -->
-<div class="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-sm">
-<span class="text-secondary text-xs">Displaying 5 of 84 oversubscribed course reserves</span>
-<button class="text-accent hover:underline text-xs font-semibold flex items-center gap-1">
-<span>Trigger Bulk Acquisition Re-order</span>
-<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
-</button>
-</div>
-</div>
-</div>
-<!-- ========================================================================= -->
-<!-- BOTTOM SPLIT: STAGNANT INVENTORY WARNING & AUTOMATED EXPORT PACKS        -->
-<!-- ========================================================================= -->
-<div class="grid grid-cols-12 gap-6">
-<!-- Warning & Deselection Alert (5 cols) -->
-<div class="col-span-12 xl:col-span-5 p-4 rounded-lg bg-amber-50/60 border border-amber-200 shadow-soft flex items-start gap-3">
-<div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-<span class="material-symbols-outlined text-xl" data-icon="warning">warning</span>
-</div>
-<div class="flex-1">
-<div class="flex items-center justify-between">
-<h3 class="text-lg font-semibold text-amber-950">Underutilized Inventory &amp; Deselection Candidate Warning</h3>
-<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900">Action Suggested</span>
-</div>
-<p class="text-sm  text-amber-900 mt-1">
-<strong>214 physical volumes</strong> in Main Stacks have recorded <strong>zero circulations in &gt;24 consecutive months</strong> (predominantly PZ3 historical fiction &amp; outdated pre-2010 tech handbooks).
-            </p>
-<div class="mt-3 flex items-center gap-3">
-<button class="px-3 py-1.5 rounded bg-amber-700 hover:bg-amber-800 text-white text-xs font-medium font-semibold transition-colors">
-                Review Deselection Queue
-              </button>
-<button class="text-amber-900 hover:underline text-xs font-medium">
-                Relocate to Turing Compact Storage
-              </button>
-</div>
-</div>
-</div>
-<!-- Automated Compliance & Regulatory Audit Packs (7 cols) -->
-<div class="col-span-12 xl:col-span-7 p-4 rounded-lg bg-surface border border-gray-200 shadow-soft flex flex-col justify-between">
-<div class="flex items-center justify-between pb-2 border-b border-gray-200">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-accent" data-icon="file_present">file_present</span>
-<h3 class="text-lg font-semibold text-accent">Institutional Compliance &amp; Audit Packs</h3>
-</div>
-<span class="text-xs font-medium text-secondary">Automated Sync: Daily 00:00 UTC</span>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-<!-- Pack 1 -->
-<div class="p-3 rounded-lg bg-background border border-gray-200 hover:border-primary/40 transition-all flex flex-col justify-between">
-<div>
-<div class="flex items-center justify-between text-secondary">
-<span class="text-[10px] font-bold uppercase tracking-wider text-red-600 bg-red-50 px-1.5 py-0.5 rounded">PDF Return</span>
-<span class="material-symbols-outlined text-base" data-icon="picture_as_pdf">picture_as_pdf</span>
-</div>
-<div class="text-sm font-medium text-accent font-semibold mt-2">Fall 2024 SCONUL &amp; ARL Return</div>
-<div class="text-[11px] text-secondary mt-0.5">Accreditation benchmark dataset</div>
-</div>
-<button class="mt-3 w-full py-1 text-xs font-medium text-accent hover:bg-gray-50 rounded border border-gray-200 text-center font-medium">
-                Download (8.4 MB)
-              </button>
-</div>
-<!-- Pack 2 -->
-<div class="p-3 rounded-lg bg-background border border-gray-200 hover:border-primary/40 transition-all flex flex-col justify-between">
-<div>
-<div class="flex items-center justify-between text-secondary">
-<span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">CSV Audit</span>
-<span class="material-symbols-outlined text-base" data-icon="table_chart">table_chart</span>
-</div>
-<div class="text-sm font-medium text-accent font-semibold mt-2">Fines, Fees &amp; Revenue Audit</div>
-<div class="text-[11px] text-secondary mt-0.5">Bursar reconciliation balance</div>
-</div>
-<button class="mt-3 w-full py-1 text-xs font-medium text-accent hover:bg-gray-50 rounded border border-gray-200 text-center font-medium">
-                Download (2.1 MB)
-              </button>
-</div>
-<!-- Pack 3 -->
-<div class="p-3 rounded-lg bg-background border border-gray-200 hover:border-primary/40 transition-all flex flex-col justify-between">
-<div>
-<div class="flex items-center justify-between text-secondary">
-<span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Excel Model</span>
-<span class="material-symbols-outlined text-base" data-icon="sheet_metric">splitscreen_top</span>
-</div>
-<div class="text-sm font-medium text-accent font-semibold mt-2">Overdue &amp; Loss Exposure Risk</div>
-<div class="text-[11px] text-secondary mt-0.5">Actuarial replacement valuation</div>
-</div>
-<button class="mt-3 w-full py-1 text-xs font-medium text-accent hover:bg-gray-50 rounded border border-gray-200 text-center font-medium">
-                Download (4.6 MB)
-              </button>
-</div>
-</div>
-</div>
-</div>
+
 {% endblock %}

@@ -43,6 +43,7 @@
             </div>
 
             <!-- PEOPLE -->
+            {% if not user.is_member %}
             <div>
                 <div class="px-3 mb-2 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider sidebar-text">People</div>
                 <div class="space-y-1">
@@ -58,23 +59,28 @@
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
 
             <!-- OPERATIONS -->
             <div>
                 <div class="px-3 mb-2 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider sidebar-text">Operations</div>
                 <div class="space-y-1">
-                    <a href="{% url 'transactions:issue_book' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.url_name == 'issue_book' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                    {% if not user.is_member %}
+                    <a href="{% url 'transactions:issue' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.url_name == 'issue' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
                         <span class="material-symbols-outlined text-[20px]">output</span>
                         <span class="text-sm font-medium sidebar-text">Circulation</span>
                     </a>
-                    <a href="{% url 'transactions:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'transactions' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                    {% endif %}
+                    <a href="{% url 'transactions:history' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.url_name == 'history' and request.resolver_match.app_name == 'transactions' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
                         <span class="material-symbols-outlined text-[20px]">receipt_long</span>
                         <span class="text-sm font-medium sidebar-text">Transactions</span>
                     </a>
-                    <a href="{% url 'subscriptions:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'subscriptions' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                    {% if user.is_org_admin %}
+                    <a href="{% url 'subscriptions:dashboard' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'subscriptions' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
                         <span class="material-symbols-outlined text-[20px]">card_membership</span>
                         <span class="text-sm font-medium sidebar-text">Subscriptions</span>
                     </a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -82,14 +88,17 @@
             <div>
                 <div class="px-3 mb-2 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider sidebar-text">System</div>
                 <div class="space-y-1">
-                    <a href="{% url 'reports:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'reports' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
+                    {% if not user.is_member %}
+                    <a href="{% url 'reports:index' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'reports' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
                         <span class="material-symbols-outlined text-[20px]">analytics</span>
                         <span class="text-sm font-medium sidebar-text">Reports</span>
                     </a>
+                    {% endif %}
                     <a href="{% url 'notifications:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'notifications' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
                         <span class="material-symbols-outlined text-[20px]">notifications</span>
                         <span class="text-sm font-medium sidebar-text">Notifications</span>
                     </a>
+                    {% if user.is_org_admin %}
                     <a href="{% url 'audit:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {% if request.resolver_match.app_name == 'audit' %}bg-[var(--color-primary-transparent)] text-[var(--color-primary)]{% else %}text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]{% endif %}">
                         <span class="material-symbols-outlined text-[20px]">history</span>
                         <span class="text-sm font-medium sidebar-text">Audit Log</span>
@@ -98,6 +107,7 @@
                         <span class="material-symbols-outlined text-[20px]">settings</span>
                         <span class="text-sm font-medium sidebar-text">Settings</span>
                     </a>
+                    {% endif %}
                 </div>
             </div>
 

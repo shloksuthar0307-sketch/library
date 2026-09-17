@@ -56,15 +56,15 @@
                     <td>
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-[var(--color-primary-transparent)] text-[var(--color-primary)] flex items-center justify-center font-bold text-sm">
-                                {{ member.first_name|first|default:member.username|first }}
+                                {{ member.user.first_name|first|default:member.user.username|first|upper }}
                             </div>
                             <div>
-                                <div class="font-medium text-[var(--color-text)]">{{ member.get_full_name|default:member.username }}</div>
-                                <div class="text-xs text-[var(--color-muted)]">{{ member.email }}</div>
+                                <div class="font-medium text-[var(--color-text)]">{{ member.user.get_full_name|default:member.user.username }}</div>
+                                <div class="text-xs text-[var(--color-muted)]">{{ member.user.email }}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="font-mono text-sm text-[var(--color-muted)]">{{ member.member_profile.member_id|default:"-" }}</td>
+                    <td class="font-mono text-sm text-[var(--color-muted)]">{{ member.member_id|default:"-" }}</td>
                     <td>
                         {% if member.status == 'ACTIVE' %}
                             <span class="badge badge-success">Active</span>
@@ -74,7 +74,7 @@
                             <span class="badge badge-info">{{ member.status|default:"Unknown" }}</span>
                         {% endif %}
                     </td>
-                    <td class="text-sm text-[var(--color-muted)]">{{ member.date_joined|date:"M d, Y" }}</td>
+                    <td class="text-sm text-[var(--color-muted)]">{{ member.membership_date|date:"M d, Y" }}</td>
                     <td class="text-right">
                         <a href="{% url 'members:detail' member.pk %}" class="btn btn-ghost w-8 h-8 p-0" onclick="event.stopPropagation()">
                             <span class="material-symbols-outlined text-[18px]">chevron_right</span>

@@ -21,13 +21,22 @@ def billing_dashboard(request):
     # Get or create trial subscription
     subscription = getattr(org, 'subscription', None)
     if not subscription:
-        free_plan = SubscriptionPlan.objects.filter(code=SubscriptionPlan.Code.FREE).first()
-        if free_plan:
-            subscription = OrganizationSubscription.objects.create(
-                organization=org,
-                plan=free_plan,
-                status=OrganizationSubscription.Status.TRIAL
-            )
+        free_plan, _ = SubscriptionPlan.objects.get_or_create(
+            code=SubscriptionPlan.Code.FREE,
+            defaults={
+                'name': 'Free Tier',
+                'max_members': 100,
+                'max_books': 500,
+                'max_staff': 3,
+                'max_branches': 1,
+                'monthly_price': 0.00
+            }
+        )
+        subscription = OrganizationSubscription.objects.create(
+            organization=org,
+            plan=free_plan,
+            status=OrganizationSubscription.Status.TRIAL
+        )
 
     # Current usage stats
     members_count = User.objects.filter(organization=org, role=User.Role.MEMBER).count()

@@ -1,6 +1,7 @@
 from django.db import models
 
 from organizations.managers import TenantManager
+from config.utils import GenerateSafeFilename
 
 
 class Category(models.Model):
@@ -40,7 +41,7 @@ class Author(models.Model):
     )
     name = models.CharField(max_length=150)
     biography = models.TextField(blank=True)
-    photo = models.ImageField(upload_to="authors/", null=True, blank=True)
+    photo = models.ImageField(upload_to=GenerateSafeFilename("authors/"), null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     nationality = models.CharField(max_length=100, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
@@ -100,7 +101,7 @@ class Book(models.Model):
     total_copies = models.PositiveIntegerField(default=1)
     available_copies = models.PositiveIntegerField(default=1)
 
-    cover_image = models.ImageField(upload_to="books/covers/", null=True, blank=True)
+    cover_image = models.ImageField(upload_to=GenerateSafeFilename("books/covers/"), null=True, blank=True)
     shelf_number = models.CharField(max_length=50, blank=True)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="AVAILABLE")
@@ -206,7 +207,7 @@ class DigitalAsset(models.Model):
         on_delete=models.CASCADE,
         related_name="digital_assets",
     )
-    file = models.FileField(upload_to="digital_books/")
+    file = models.FileField(upload_to=GenerateSafeFilename("digital_books/"))
     format = models.CharField(max_length=10, choices=[('PDF', 'PDF'), ('EPUB', 'EPUB')])
     file_size_bytes = models.PositiveIntegerField(default=0)
     requires_drm = models.BooleanField(default=False)

@@ -2,6 +2,9 @@
 {% block title %}Issue Books - LIBRIX{% endblock %}
 
 {% block content %}
+<!-- Include html5-qrcode library -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
 <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 stagger-1">
     <div>
         <h1 class="text-3xl font-bold tracking-tight mb-2">Circulation Desk</h1>
@@ -24,50 +27,66 @@
             {% csrf_token %}
             
             <!-- Scanner Area -->
-            <div class="p-8 bg-[#0a0a0a] border-b border-[var(--color-border)] relative flex flex-col items-center justify-center min-h-[240px]">
-                <!-- Scanner Animation -->
-                <div class="w-full max-w-sm h-32 border-2 border-dashed border-[var(--color-muted)]/30 rounded-xl relative overflow-hidden flex items-center justify-center bg-white/5">
+            <div class="p-8 bg-[#0a0a0a] border-b border-[var(--color-border)] relative flex flex-col items-center justify-center min-h-[300px]" onclick="document.getElementById('scanner_input').focus()">
+                <!-- Hidden input for manual/simulated scanning via hardware scanner -->
+                <input type="text" id="scanner_input" class="absolute opacity-0 w-full h-full cursor-pointer z-20" autofocus autocomplete="off">
+                
+                <!-- Camera Container -->
+                <div id="reader" class="w-full max-w-sm rounded-xl overflow-hidden shadow-lg z-30 hidden border-2 border-[var(--color-primary)] relative"></div>
+                
+                <!-- Scanner Animation (Idle state) -->
+                <div id="scanner-idle" class="w-full max-w-sm h-32 border-2 border-dashed border-[var(--color-muted)]/30 rounded-xl relative overflow-hidden flex flex-col items-center justify-center bg-white/5 pointer-events-none transition-all">
                     <div class="scanner-line"></div>
                     <div class="text-center z-10">
                         <span class="material-symbols-outlined text-[48px] text-[var(--color-primary-glow)] mb-2 block animate-pulse">barcode_scanner</span>
                         <p class="text-sm text-[var(--color-muted)] font-mono">Listening for scanner...</p>
+                        <p class="text-xs text-[var(--color-muted)]/50 mt-1">Type or use hardware scanner</p>
                     </div>
                 </div>
                 
-                <!-- Manual Entry Toggle -->
-                <button type="button" id="toggle-manual" class="mt-6 text-sm text-[var(--color-primary)] hover:underline">Or enter details manually</button>
+                <div class="flex flex-wrap gap-4 mt-6 z-30">
+                    <button type="button" id="start-camera" class="btn btn-primary text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">photo_camera</span>
+                        Use Camera
+                    </button>
+                    
+                    <button type="button" id="upload-image-btn" class="btn btn-secondary text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">image</span>
+                        Upload Image
+                    </button>
+                    <input type="file" id="file-scanner-input" accept="image/*" class="hidden">
+                    
+                    <!-- Manual Entry Toggle -->
+                    <button type="button" id="toggle-manual" class="text-sm text-[var(--color-primary)] hover:underline px-4 py-2">Or enter details manually</button>
+                </div>
             </div>
             
             <!-- Manual Form Fields (Hidden by default, shown via JS or when scanner isn't used) -->
-            <div class="p-6 space-y-6" id="manual-fields">
+            <div class="p-6 space-y-6 hidden" id="manual-fields">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
-                    <div class="input-group">
+                    <!-- Member Searchable Input -->
+                    <div class="input-group relative">
                         <label class="input-label">Member</label>
-                        <select name="member_id" id="member_select" class="input-field" required>
-                            <option value="">Select or scan member card...</option>
+                        <input type="text" list="member_datalist" id="member_search" class="input-field" placeholder="Type to search or scan..." required autocomplete="off">
+                        <datalist id="member_datalist">
                             {% for member in members %}
-                                <option value="{{ member.id }}" data-barcode="{{ member.member_profile.member_id|default:'' }}">
-                                    {{ member.get_full_name|default:member.username }} ({{ member.member_profile.member_id|default:"No ID" }})
-                                </option>
+                                <option data-id="{{ member.id }}" data-barcode="{{ member.member_profile.member_id|default:'' }}" value="{{ member.get_full_name|default:member.username }} ({{ member.member_profile.member_id|default:'No ID' }})">
                             {% endfor %}
-                        </select>
+                        </datalist>
+                        <input type="hidden" name="member_id" id="member_select" required>
                     </div>
                     
-                    <div class="input-group">
-                        <label class="input-label">Book Copy</label>
-                        <select name="book_copy_id" id="book_select" class="input-field" required>
-                            <option value="">Select or scan book barcode...</option>
+                    <!-- Book Searchable Input -->
+                    <div class="input-group relative">
+                        <label class="input-label">Book</label>
+                        <input type="text" list="book_datalist" id="book_search" class="input-field" placeholder="Type to search or scan..." required autocomplete="off">
+                        <datalist id="book_datalist">
                             {% for book in books %}
-                                {% for copy in book.bookcopy_set.all %}
-                                    {% if copy.is_available %}
-                                    <option value="{{ copy.id }}" data-barcode="{{ copy.copy_number }}">
-                                        {{ book.title }} - Copy {{ copy.copy_number }}
-                                    </option>
-                                    {% endif %}
-                                {% endfor %}
+                                <option data-id="{{ book.id }}" data-barcode="{{ book.isbn|default:book.id }}" value="{{ book.title }} ({{ book.available_copies }} available)">
                             {% endfor %}
-                        </select>
+                        </datalist>
+                        <input type="hidden" name="book_id" id="book_select" required>
                     </div>
 
                 </div>
@@ -143,53 +162,189 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hidden buffer for barcode scanner
     let barcodeBuffer = '';
     let barcodeTimeout;
-    const memberSelect = document.getElementById('member_select');
-    const bookSelect = document.getElementById('book_select');
+    const memberSelect = document.getElementById('member_select'); // hidden input for ID
+    const bookSelect = document.getElementById('book_select'); // hidden input for ID
+    const memberSearch = document.getElementById('member_search'); // text input
+    const bookSearch = document.getElementById('book_search'); // text input
     const form = document.getElementById('issue-form');
+    const toggleManualBtn = document.getElementById('toggle-manual');
+    const manualFields = document.getElementById('manual-fields');
     
-    // Listen for global keystrokes (most barcode scanners act as keyboards emitting characters + Enter very fast)
-    document.addEventListener('keydown', (e) => {
-        // Don't intercept if user is actively typing in a standard input (except body)
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-            return;
+    // Auto-fill hidden IDs when user selects from datalist
+    memberSearch.addEventListener('input', (e) => {
+        const list = document.getElementById('member_datalist');
+        const option = Array.from(list.options).find(opt => opt.value === e.target.value);
+        if (option) {
+            memberSelect.value = option.dataset.id;
+        } else {
+            memberSelect.value = '';
         }
-        
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (barcodeBuffer.length > 3) {
-                processBarcode(barcodeBuffer);
-            }
-            barcodeBuffer = '';
-        } else if (e.key.length === 1) { // Normal character
-            barcodeBuffer += e.key;
-            
-            // Clear buffer if it's too slow (not a scanner)
-            clearTimeout(barcodeTimeout);
-            barcodeTimeout = setTimeout(() => {
-                barcodeBuffer = '';
-            }, 100); // Scanners typically send characters < 20ms apart
+    });
+
+    bookSearch.addEventListener('input', (e) => {
+        const list = document.getElementById('book_datalist');
+        const option = Array.from(list.options).find(opt => opt.value === e.target.value);
+        if (option) {
+            bookSelect.value = option.dataset.id;
+        } else {
+            bookSelect.value = '';
         }
     });
     
+    if (toggleManualBtn && manualFields) {
+        toggleManualBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // prevent focusing scanner input
+            manualFields.classList.toggle('hidden');
+            if (!manualFields.classList.contains('hidden')) {
+                toggleManualBtn.textContent = 'Hide manual entry';
+                memberSearch.focus();
+            } else {
+                toggleManualBtn.textContent = 'Or enter details manually';
+            }
+        });
+    }
+    
+    // Simulated scanner via hidden input
+    const scannerInput = document.getElementById('scanner_input');
+    if (scannerInput) {
+        scannerInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const code = scannerInput.value.trim();
+                if (code) {
+                    processBarcode(code);
+                    scannerInput.value = '';
+                }
+            }
+        });
+        
+        // Also keep focus on the scanner input if they click anywhere in the scanner area
+        document.querySelector('.min-h-\\[300px\\]').addEventListener('click', (e) => {
+            if(e.target.tagName !== 'BUTTON') {
+                scannerInput.focus();
+            }
+        });
+    }
+    
+    // Camera Scanner Logic using core html5-qrcode
+    const startCameraBtn = document.getElementById('start-camera');
+    const uploadImageBtn = document.getElementById('upload-image-btn');
+    const fileScannerInput = document.getElementById('file-scanner-input');
+    const readerDiv = document.getElementById('reader');
+    const idleDiv = document.getElementById('scanner-idle');
+    let html5QrCode = null;
+
+    if (uploadImageBtn && fileScannerInput) {
+        uploadImageBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileScannerInput.click();
+        });
+        
+        fileScannerInput.addEventListener('change', (e) => {
+            if (e.target.files.length == 0) return;
+            const imageFile = e.target.files[0];
+            
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+            
+            window.Toast.show('Scanning image...', 'info');
+            html5QrCode.scanFile(imageFile, true)
+                .then(decodedText => {
+                    window.Toast.show(`Image scanned: ${decodedText}`, 'info');
+                    processBarcode(decodedText);
+                    fileScannerInput.value = ''; // reset
+                })
+                .catch(err => {
+                    window.Toast.show('No barcode found in image.', 'warning');
+                    fileScannerInput.value = ''; // reset
+                });
+        });
+    }
+
+    if (startCameraBtn) {
+        startCameraBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (html5QrCode && html5QrCode.isScanning) {
+                // Stop camera
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                    readerDiv.classList.add('hidden');
+                    idleDiv.classList.remove('hidden');
+                    startCameraBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">photo_camera</span>Use Camera';
+                    startCameraBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                }).catch(err => {
+                    console.error("Failed to stop scanner", err);
+                });
+            } else {
+                // Start camera instantly without the intermediate UI
+                readerDiv.classList.remove('hidden');
+                idleDiv.classList.add('hidden');
+                startCameraBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">stop_circle</span>Starting...';
+                
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("reader");
+                }
+                
+                html5QrCode.start(
+                    { facingMode: "environment" }, // prefer back camera
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 100 },
+                        aspectRatio: 1.0,
+                        formatsToSupport: [
+                            Html5QrcodeSupportedFormats.EAN_13,
+                            Html5QrcodeSupportedFormats.EAN_8,
+                            Html5QrcodeSupportedFormats.CODE_128,
+                            Html5QrcodeSupportedFormats.CODE_39,
+                            Html5QrcodeSupportedFormats.QR_CODE,
+                            Html5QrcodeSupportedFormats.UPC_A
+                        ]
+                    },
+                    (decodedText) => {
+                        // Success callback
+                        window.Toast.show(`Camera scanned: ${decodedText}`, 'info');
+                        processBarcode(decodedText);
+                    },
+                    (errorMessage) => {
+                        // Ignore continuous scan errors
+                    }
+                ).then(() => {
+                    startCameraBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">stop_circle</span>Stop Camera';
+                    startCameraBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                }).catch((err) => {
+                    window.Toast.show('Camera access denied or unavailable.', 'error');
+                    readerDiv.classList.add('hidden');
+                    idleDiv.classList.remove('hidden');
+                    startCameraBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">photo_camera</span>Use Camera';
+                });
+            }
+        });
+    }
+
     function processBarcode(code) {
         let matched = false;
         
         // Check if it's a member code
-        Array.from(memberSelect.options).forEach(opt => {
+        const memberOptions = document.getElementById('member_datalist').options;
+        Array.from(memberOptions).forEach(opt => {
             if (opt.dataset.barcode === code) {
-                memberSelect.value = opt.value;
+                memberSelect.value = opt.dataset.id;
+                memberSearch.value = opt.value;
                 matched = true;
-                window.Toast.show('Member scanned successfully!', 'success');
+                window.Toast.show('Member identified!', 'success');
             }
         });
         
-        // If not member, check if it's a book copy code
+        // If not member, check if it's a book code
         if (!matched) {
-            Array.from(bookSelect.options).forEach(opt => {
+            const bookOptions = document.getElementById('book_datalist').options;
+            Array.from(bookOptions).forEach(opt => {
                 if (opt.dataset.barcode === code) {
-                    bookSelect.value = opt.value;
+                    bookSelect.value = opt.dataset.id;
+                    bookSearch.value = opt.value;
                     matched = true;
-                    window.Toast.show('Book scanned successfully!', 'success');
+                    window.Toast.show('Book identified!', 'success');
                 }
             });
         }
@@ -198,12 +353,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (memberSelect.value && bookSelect.value) {
             window.Toast.show('Processing issue...', 'info');
             setTimeout(() => {
+                if(html5QrCode && html5QrCode.isScanning) html5QrCode.stop(); // Stop camera on submit
                 form.submit();
             }, 500);
         } else if (!matched) {
-            window.Toast.show(`Barcode not recognized: ${code}`, 'error');
+            window.Toast.show(`Barcode not recognized: ${code}`, 'warning');
         }
     }
 });
 </script>
+<style>
+/* Clean up the reader rendering */
+#reader video {
+    border-radius: 10px;
+    width: 100% !important;
+}
+#reader {
+    border: none !important;
+}
+</style>
 {% endblock %}

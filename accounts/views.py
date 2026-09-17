@@ -22,7 +22,7 @@ def login_view(request):
         # Authenticate by either username or email
         user = User.objects.filter(Q(email=login_input) | Q(username=login_input)).first()
         if user and user.check_password(password):
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect_based_on_role(user)
         else:
             messages.error(request, 'Invalid username/email or password.')
@@ -144,8 +144,8 @@ def profile_view(request):
                 messages.error(request, 'Current password is incorrect.')
                 return redirect('accounts:profile')
 
-            if len(new_password) < 6:
-                messages.error(request, 'New password must be at least 6 characters long.')
+            if len(new_password) < 12:
+                messages.error(request, 'New password must be at least 12 characters long.')
                 return redirect('accounts:profile')
 
             if new_password != confirm_password:

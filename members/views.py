@@ -67,10 +67,11 @@ def create_member(request):
         messages.error(request, "Member ID already exists in this organization.")
         return redirect("members:list")
 
+    password = User.objects.make_random_password(length=12)
     user = User.objects.create_user(
         username=username,
         email=email,
-        password="changeme123",
+        password=password,
         first_name=first_name,
         last_name=last_name,
         role=User.Role.MEMBER,
@@ -87,7 +88,7 @@ def create_member(request):
     log_org_event(request, "Member Added", "Members", f"Registered {username}", org)
     messages.success(
         request,
-        f'Member "{first_name} {last_name}" registered successfully! Default password: changeme123',
+        f'Member "{first_name} {last_name}" registered successfully! Temporary password: {password}',
     )
     return redirect("members:list")
 

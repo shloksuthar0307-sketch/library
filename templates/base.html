@@ -17,11 +17,8 @@
     <!-- Tailwind CSS (for layout utilities) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Premium Design System -->
-    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <!-- Custom Design System (Unified) -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -65,8 +62,8 @@
     {% include 'partials/command_palette.html' %}
 
     <!-- Core Javascript -->
-    <script src="{% static 'js/app.js' %}"></script>
-    <script src="{% static 'js/command_palette.js' %}"></script>
+    <!-- Application Scripts (Unified) -->
+    <script src="{% static 'js/main.js' %}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>

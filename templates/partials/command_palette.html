@@ -14,7 +14,7 @@
             
             <div class="px-3 py-2 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Quick Actions</div>
             
-            <a href="{% url 'transactions:issue_book' %}" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors group cursor-pointer">
+            <a href="{% url 'transactions:issue' %}" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors group cursor-pointer">
                 <div class="w-8 h-8 rounded-md bg-[var(--color-primary-transparent)] flex items-center justify-center text-[var(--color-primary)]">
                     <span class="material-symbols-outlined text-[18px]">output</span>
                 </div>
@@ -43,7 +43,7 @@
                 <span class="text-sm font-medium text-[var(--color-text)]">View Members</span>
             </a>
             
-            <a href="{% url 'reports:list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors">
+            <a href="{% url 'reports:index' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors">
                 <span class="material-symbols-outlined text-[18px] text-[var(--color-muted)]">analytics</span>
                 <span class="text-sm font-medium text-[var(--color-text)]">Analytics & Reports</span>
             </a>

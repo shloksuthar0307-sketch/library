@@ -1,9 +1,10 @@
-﻿import uuid
+import uuid
 
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
+from config.utils import GenerateSafeFilename
 from organizations.managers import TenantManager
 
 
@@ -33,7 +34,7 @@ class Organization(models.Model):
         choices=OrganizationType.choices,
         default=OrganizationType.OTHER,
     )
-    logo = models.ImageField(upload_to="organizations/logos/", null=True, blank=True)
+    logo = models.ImageField(upload_to=GenerateSafeFilename("organizations/logos/"), null=True, blank=True)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     website = models.URLField(blank=True)
